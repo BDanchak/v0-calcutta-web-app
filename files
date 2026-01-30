@@ -1,0 +1,38 @@
+// components/real-time-auction.tsx
+import React, { useEffect } from "react";
+import { useToast } from "@/hooks/use-toast";
+// /** rest of code here **/
+
+const RealTimeAuction = ({ leagueId, league, auctionDateTime, currentDateTime, auctionHasStarted }) => {
+  const { toast } = useToast();
+
+  useEffect(() => {
+    if (!auctionHasStarted) return;
+    if (typeof window === "undefined") return;
+    const key = `auction_start_notified_${leagueId}`;
+    if (localStorage.getItem(key) === "1") return;
+    localStorage.setItem(key, "1");
+    toast({
+      title: "Auction Started",
+      description: `${league?.name} auction is now LIVE.`,
+    });
+  }, [auctionHasStarted, leagueId, league?.name, toast]);
+
+  // /** rest of code here **/
+};
+
+export default RealTimeAuction;
+
+// app/leagues/[id]/page.tsx
+import React from "react";
+// /** rest of code here **/
+
+const getAuctionResults = (league, auctionResults) => {
+  const leagueMembers = Array.from(
+    new Set([...(league.joinedMembers || Object.keys(auctionResults)), league.createdBy].filter(Boolean))
+  );
+
+  // /** rest of code here **/
+};
+
+// /** rest of code here **/
