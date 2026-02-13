@@ -139,8 +139,8 @@ export default function HomePage() {
             <div className="flex justify-center mb-8">
               <div className="relative">
                 {/* Replaced .jpg logo with new transparent background .png logo per user request */}
-                {/* Enlarged logo by 250% from h-72 (288px) to h-[720px] per user request */}
-                <img src="/images/calcutta-fantasy-logo-transparent.png" alt="Calcutta Fantasy" className="h-[720px] w-auto" />
+                {/* Decreased height by 250% (720/2.5=288px) and increased width by 250% (auto->720px) per user request */}
+                <img src="/images/calcutta-fantasy-logo-transparent.png" alt="Calcutta Fantasy" className="h-[288px] w-[720px] object-contain" />
               </div>
             </div>
             <h1 className="text-4xl font-bold tracking-tight text-foreground sm:text-6xl">
