@@ -267,34 +267,31 @@ export function TournamentBracket({ tournamentId, leagueSquads }: TournamentBrac
   const generateBracketGames = () => {
     const games: BracketGame[] = []
     const teams = tournamentData.teams
-    // Check if tournament data includes real historical results
-    const isCompleted = (tournamentData as any).isCompleted || false
-
     // 2024 March Madness - Real historical results with all rounds: UConn defeated Purdue 75-60
     if (tournamentData.name.includes("March Madness") && tournamentData.name.includes("2024")) {
-      // Find specific teams for real results - updated with actual 2024 tournament data
-      const uconn = teams.find(t => t.name === "UConn Huskies")
-      const purdue = teams.find(t => t.name === "Purdue Boilermakers")
-      const ncState = teams.find(t => t.name === "NC State Wolfpack")
-      const alabama = teams.find(t => t.name === "Alabama Crimson Tide")
-      const illinois = teams.find(t => t.name === "Illinois Fighting Illini")
-      const clemson = teams.find(t => t.name === "Clemson Tigers")
-      const tennessee = teams.find(t => t.name === "Tennessee Volunteers")
-      const gonzaga = teams.find(t => t.name === "Gonzaga Bulldogs")
-      const duke = teams.find(t => t.name === "Duke Blue Devils")
-      const marquette = teams.find(t => t.name === "Marquette Golden Eagles")
-      const arizona = teams.find(t => t.name === "Arizona Wildcats")
-      const sanDiegoState = teams.find(t => t.name === "San Diego State Aztecs")
-      const iowaState = teams.find(t => t.name === "Iowa State Cyclones")
-      const northCarolina = teams.find(t => t.name === "North Carolina Tar Heels")
-      const creighton = teams.find(t => t.name === "Creighton Bluejays")
+      // Find specific teams for real results - added || null to fix undefined vs null type mismatch
+      const uconn = teams.find(t => t.name === "UConn Huskies") || null
+      const purdue = teams.find(t => t.name === "Purdue Boilermakers") || null
+      const ncState = teams.find(t => t.name === "NC State Wolfpack") || null
+      const alabama = teams.find(t => t.name === "Alabama Crimson Tide") || null
+      const illinois = teams.find(t => t.name === "Illinois Fighting Illini") || null
+      const clemson = teams.find(t => t.name === "Clemson Tigers") || null
+      const tennessee = teams.find(t => t.name === "Tennessee Volunteers") || null
+      const gonzaga = teams.find(t => t.name === "Gonzaga Bulldogs") || null
+      const duke = teams.find(t => t.name === "Duke Blue Devils") || null
+      const marquette = teams.find(t => t.name === "Marquette Golden Eagles") || null
+      const arizona = teams.find(t => t.name === "Arizona Wildcats") || null
+      const sanDiegoState = teams.find(t => t.name === "San Diego State Aztecs") || null
+      const iowaState = teams.find(t => t.name === "Iowa State Cyclones") || null
+      const northCarolina = teams.find(t => t.name === "North Carolina Tar Heels") || null
+      const creighton = teams.find(t => t.name === "Creighton Bluejays") || null
 
       // EAST REGION - UConn won this region
       // First Round - Real scores from 2024 tournament with team1Score and team2Score
       games.push({
         id: "r1-e-1",
         team1: uconn,
-        team2: teams.find(t => t.name === "Stetson Hatters"),
+        team2: teams.find(t => t.name === "Stetson Hatters") || null,
         winner: uconn ? { ...uconn, score: 91 } : undefined,
         // Added team1Score and team2Score for actual game result: UConn 91-52 Stetson
         team1Score: 91,
@@ -306,7 +303,7 @@ export function TournamentBracket({ tournamentId, leagueSquads }: TournamentBrac
       games.push({
         id: "r1-e-2",
         team1: iowaState,
-        team2: teams.find(t => t.name === "South Dakota State Jackrabbits"),
+        team2: teams.find(t => t.name === "South Dakota State Jackrabbits") || null,
         winner: iowaState ? { ...iowaState, score: 68 } : undefined,
         // Added team1Score and team2Score: Iowa State 68-55 South Dakota State
         team1Score: 68,
@@ -318,7 +315,7 @@ export function TournamentBracket({ tournamentId, leagueSquads }: TournamentBrac
       games.push({
         id: "r1-e-3",
         team1: illinois,
-        team2: teams.find(t => t.name === "Morehead State Eagles"),
+        team2: teams.find(t => t.name === "Morehead State Eagles") || null,
         winner: illinois ? { ...illinois, score: 85 } : undefined,
         // Added team1Score and team2Score: Illinois 85-69 Morehead State
         team1Score: 85,
@@ -329,8 +326,8 @@ export function TournamentBracket({ tournamentId, leagueSquads }: TournamentBrac
       })
       games.push({
         id: "r1-e-4",
-        team1: teams.find(t => t.name === "Duquesne Dukes"),
-        team2: teams.find(t => t.name === "BYU Cougars"),
+        team1: teams.find(t => t.name === "Duquesne Dukes") || null,
+        team2: teams.find(t => t.name === "BYU Cougars") || null,
         winner: teams.find(t => t.name === "Duquesne Dukes") ? { ...teams.find(t => t.name === "Duquesne Dukes")!, score: 71 } : undefined,
         // Added team1Score and team2Score: Duquesne 71-67 BYU
         team1Score: 71,
@@ -342,7 +339,7 @@ export function TournamentBracket({ tournamentId, leagueSquads }: TournamentBrac
       games.push({
         id: "r1-e-5",
         team1: sanDiegoState,
-        team2: teams.find(t => t.name === "UAB Blazers"),
+        team2: teams.find(t => t.name === "UAB Blazers") || null,
         winner: sanDiegoState ? { ...sanDiegoState, score: 69 } : undefined,
         // Added team1Score and team2Score: SDSU 69-65 UAB
         team1Score: 69,
@@ -353,8 +350,8 @@ export function TournamentBracket({ tournamentId, leagueSquads }: TournamentBrac
       })
       games.push({
         id: "r1-e-6",
-        team1: teams.find(t => t.name === "Auburn Tigers"),
-        team2: teams.find(t => t.name === "Yale Bulldogs"),
+        team1: teams.find(t => t.name === "Auburn Tigers") || null,
+        team2: teams.find(t => t.name === "Yale Bulldogs") || null,
         winner: teams.find(t => t.name === "Yale Bulldogs") ? { ...teams.find(t => t.name === "Yale Bulldogs")!, score: 78 } : undefined,
         // Added team1Score and team2Score: Yale 78-76 Auburn (upset)
         team1Score: 76,
@@ -365,8 +362,8 @@ export function TournamentBracket({ tournamentId, leagueSquads }: TournamentBrac
       })
       games.push({
         id: "r1-e-7",
-        team1: teams.find(t => t.name === "Northwestern Wildcats"),
-        team2: teams.find(t => t.name === "Florida Atlantic Owls"),
+        team1: teams.find(t => t.name === "Northwestern Wildcats") || null,
+        team2: teams.find(t => t.name === "Florida Atlantic Owls") || null,
         winner: teams.find(t => t.name === "Northwestern Wildcats") ? { ...teams.find(t => t.name === "Northwestern Wildcats")!, score: 77 } : undefined,
         // Added team1Score and team2Score: Northwestern 77-65 FAU
         team1Score: 77,
@@ -380,7 +377,7 @@ export function TournamentBracket({ tournamentId, leagueSquads }: TournamentBrac
       games.push({
         id: "r2-e-1",
         team1: uconn,
-        team2: teams.find(t => t.name === "Northwestern Wildcats"),
+        team2: teams.find(t => t.name === "Northwestern Wildcats") || null,
         winner: uconn ? { ...uconn, score: 75 } : undefined,
         // Added team1Score and team2Score: UConn 75-58 Northwestern
         team1Score: 75,
@@ -392,7 +389,7 @@ export function TournamentBracket({ tournamentId, leagueSquads }: TournamentBrac
       games.push({
         id: "r2-e-2",
         team1: illinois,
-        team2: teams.find(t => t.name === "Duquesne Dukes"),
+        team2: teams.find(t => t.name === "Duquesne Dukes") || null,
         winner: illinois ? { ...illinois, score: 89 } : undefined,
         // Added team1Score and team2Score: Illinois 89-63 Duquesne
         team1Score: 89,
@@ -404,7 +401,7 @@ export function TournamentBracket({ tournamentId, leagueSquads }: TournamentBrac
       games.push({
         id: "r2-e-3",
         team1: sanDiegoState,
-        team2: teams.find(t => t.name === "Yale Bulldogs"),
+        team2: teams.find(t => t.name === "Yale Bulldogs") || null,
         winner: sanDiegoState ? { ...sanDiegoState, score: 85 } : undefined,
         // Added team1Score and team2Score: SDSU 85-57 Yale
         team1Score: 85,
@@ -416,7 +413,7 @@ export function TournamentBracket({ tournamentId, leagueSquads }: TournamentBrac
       games.push({
         id: "r2-e-4",
         team1: iowaState,
-        team2: teams.find(t => t.name === "Washington State Cougars") || iowaState,
+        team2: teams.find(t => t.name === "Washington State Cougars") || iowaState || null,
         winner: iowaState ? { ...iowaState, score: 67 } : undefined,
         // Added team1Score and team2Score: Iowa State 67-56 Washington State
         team1Score: 67,
@@ -470,8 +467,8 @@ export function TournamentBracket({ tournamentId, leagueSquads }: TournamentBrac
       // First Round - Real scores with team1Score and team2Score
       games.push({
         id: "r1-s-1",
-        team1: teams.find(t => t.name === "Houston Cougars"),
-        team2: teams.find(t => t.name === "Longwood Lancers"),
+        team1: teams.find(t => t.name === "Houston Cougars") || null,
+        team2: teams.find(t => t.name === "Longwood Lancers") || null,
         winner: teams.find(t => t.name === "Houston Cougars") ? { ...teams.find(t => t.name === "Houston Cougars")!, score: 83 } : undefined,
         // Added team1Score and team2Score: Houston 83-56 Longwood
         team1Score: 83,
@@ -483,7 +480,7 @@ export function TournamentBracket({ tournamentId, leagueSquads }: TournamentBrac
       games.push({
         id: "r1-s-2",
         team1: marquette,
-        team2: teams.find(t => t.name === "Western Kentucky Hilltoppers"),
+        team2: teams.find(t => t.name === "Western Kentucky Hilltoppers") || null,
         winner: marquette ? { ...marquette, score: 87 } : undefined,
         // Added team1Score and team2Score: Marquette 87-69 Western Kentucky
         team1Score: 87,
@@ -495,7 +492,7 @@ export function TournamentBracket({ tournamentId, leagueSquads }: TournamentBrac
       games.push({
         id: "r1-s-3",
         team1: duke,
-        team2: teams.find(t => t.name === "Vermont Catamounts"),
+        team2: teams.find(t => t.name === "Vermont Catamounts") || null,
         winner: duke ? { ...duke, score: 64 } : undefined,
         // Added team1Score and team2Score: Duke 64-47 Vermont
         team1Score: 64,
@@ -507,7 +504,7 @@ export function TournamentBracket({ tournamentId, leagueSquads }: TournamentBrac
       games.push({
         id: "r1-s-4",
         team1: ncState,
-        team2: teams.find(t => t.name === "Texas Tech Red Raiders"),
+        team2: teams.find(t => t.name === "Texas Tech Red Raiders") || null,
         winner: ncState ? { ...ncState, score: 80 } : undefined,
         // Added team1Score and team2Score: NC State 80-67 Texas Tech (upset)
         team1Score: 80,
@@ -521,7 +518,7 @@ export function TournamentBracket({ tournamentId, leagueSquads }: TournamentBrac
       games.push({
         id: "r2-s-1",
         team1: ncState,
-        team2: teams.find(t => t.name === "Oakland Golden Grizzlies"),
+        team2: teams.find(t => t.name === "Oakland Golden Grizzlies") || null,
         winner: ncState ? { ...ncState, score: 79 } : undefined,
         // Added team1Score and team2Score: NC State 79-73 Oakland
         team1Score: 79,
@@ -533,7 +530,7 @@ export function TournamentBracket({ tournamentId, leagueSquads }: TournamentBrac
       games.push({
         id: "r2-s-2",
         team1: marquette,
-        team2: teams.find(t => t.name === "Colorado Buffaloes"),
+        team2: teams.find(t => t.name === "Colorado Buffaloes") || null,
         winner: marquette ? { ...marquette, score: 81 } : undefined,
         // Added team1Score and team2Score: Marquette 81-77 Colorado
         team1Score: 81,
@@ -545,7 +542,7 @@ export function TournamentBracket({ tournamentId, leagueSquads }: TournamentBrac
       games.push({
         id: "r2-s-3",
         team1: duke,
-        team2: teams.find(t => t.name === "James Madison Dukes"),
+        team2: teams.find(t => t.name === "James Madison Dukes") || null,
         winner: duke ? { ...duke, score: 93 } : undefined,
         // Added team1Score and team2Score: Duke 93-55 James Madison
         team1Score: 93,
@@ -571,7 +568,7 @@ export function TournamentBracket({ tournamentId, leagueSquads }: TournamentBrac
       games.push({
         id: "r3-s-2",
         team1: duke,
-        team2: teams.find(t => t.name === "Houston Cougars"),
+        team2: teams.find(t => t.name === "Houston Cougars") || null,
         winner: duke ? { ...duke, score: 54 } : undefined,
         // Added team1Score and team2Score: Duke 54-51 Houston
         team1Score: 54,
@@ -600,7 +597,7 @@ export function TournamentBracket({ tournamentId, leagueSquads }: TournamentBrac
       games.push({
         id: "r1-m-1",
         team1: purdue,
-        team2: teams.find(t => t.name === "Grambling State Tigers"),
+        team2: teams.find(t => t.name === "Grambling State Tigers") || null,
         winner: purdue ? { ...purdue, score: 76 } : undefined,
         // Added team1Score and team2Score: Purdue 76-40 Grambling
         team1Score: 76,
@@ -612,7 +609,7 @@ export function TournamentBracket({ tournamentId, leagueSquads }: TournamentBrac
       games.push({
         id: "r1-m-2",
         team1: tennessee,
-        team2: teams.find(t => t.name === "Saint Peter's Peacocks"),
+        team2: teams.find(t => t.name === "Saint Peter's Peacocks") || null,
         winner: tennessee ? { ...tennessee, score: 83 } : undefined,
         // Added team1Score and team2Score: Tennessee 83-49 Saint Peter's
         team1Score: 83,
@@ -624,7 +621,7 @@ export function TournamentBracket({ tournamentId, leagueSquads }: TournamentBrac
       games.push({
         id: "r1-m-3",
         team1: gonzaga,
-        team2: teams.find(t => t.name === "McNeese Cowboys"),
+        team2: teams.find(t => t.name === "McNeese Cowboys") || null,
         winner: gonzaga ? { ...gonzaga, score: 86 } : undefined,
         // Added team1Score and team2Score: Gonzaga 86-65 McNeese
         team1Score: 86,
@@ -636,7 +633,7 @@ export function TournamentBracket({ tournamentId, leagueSquads }: TournamentBrac
       games.push({
         id: "r1-m-4",
         team1: creighton,
-        team2: teams.find(t => t.name === "Akron Zips"),
+        team2: teams.find(t => t.name === "Akron Zips") || null,
         winner: creighton ? { ...creighton, score: 77 } : undefined,
         // Added team1Score and team2Score: Creighton 77-60 Akron
         team1Score: 77,
@@ -650,7 +647,7 @@ export function TournamentBracket({ tournamentId, leagueSquads }: TournamentBrac
       games.push({
         id: "r2-m-1",
         team1: purdue,
-        team2: teams.find(t => t.name === "Utah State Aggies"),
+        team2: teams.find(t => t.name === "Utah State Aggies") || null,
         winner: purdue ? { ...purdue, score: 106 } : undefined,
         // Added team1Score and team2Score: Purdue 106-67 Utah State
         team1Score: 106,
@@ -674,7 +671,7 @@ export function TournamentBracket({ tournamentId, leagueSquads }: TournamentBrac
       games.push({
         id: "r2-m-3",
         team1: gonzaga,
-        team2: teams.find(t => t.name === "Kansas Jayhawks"),
+        team2: teams.find(t => t.name === "Kansas Jayhawks") || null,
         winner: gonzaga ? { ...gonzaga, score: 89 } : undefined,
         // Added team1Score and team2Score: Gonzaga 89-68 Kansas
         team1Score: 89,
@@ -729,7 +726,7 @@ export function TournamentBracket({ tournamentId, leagueSquads }: TournamentBrac
       games.push({
         id: "r1-w-1",
         team1: northCarolina,
-        team2: teams.find(t => t.name === "Wagner Seahawks"),
+        team2: teams.find(t => t.name === "Wagner Seahawks") || null,
         winner: northCarolina ? { ...northCarolina, score: 90 } : undefined,
         // Added team1Score and team2Score: UNC 90-62 Wagner
         team1Score: 90,
@@ -741,7 +738,7 @@ export function TournamentBracket({ tournamentId, leagueSquads }: TournamentBrac
       games.push({
         id: "r1-w-2",
         team1: arizona,
-        team2: teams.find(t => t.name === "Long Beach State 49ers"),
+        team2: teams.find(t => t.name === "Long Beach State 49ers") || null,
         winner: arizona ? { ...arizona, score: 85 } : undefined,
         // Added team1Score and team2Score: Arizona 85-65 Long Beach State
         team1Score: 85,
@@ -753,7 +750,7 @@ export function TournamentBracket({ tournamentId, leagueSquads }: TournamentBrac
       games.push({
         id: "r1-w-3",
         team1: alabama,
-        team2: teams.find(t => t.name === "Charleston Cougars"),
+        team2: teams.find(t => t.name === "Charleston Cougars") || null,
         winner: alabama ? { ...alabama, score: 96 } : undefined,
         // Added team1Score and team2Score: Alabama 96-75 Charleston
         team1Score: 96,
@@ -765,7 +762,7 @@ export function TournamentBracket({ tournamentId, leagueSquads }: TournamentBrac
       games.push({
         id: "r1-w-4",
         team1: clemson,
-        team2: teams.find(t => t.name === "New Mexico Lobos"),
+        team2: teams.find(t => t.name === "New Mexico Lobos") || null,
         winner: clemson ? { ...clemson, score: 77 } : undefined,
         // Added team1Score and team2Score: Clemson 77-56 New Mexico
         team1Score: 77,
@@ -779,7 +776,7 @@ export function TournamentBracket({ tournamentId, leagueSquads }: TournamentBrac
       games.push({
         id: "r2-w-1",
         team1: alabama,
-        team2: teams.find(t => t.name === "Grand Canyon Antelopes"),
+        team2: teams.find(t => t.name === "Grand Canyon Antelopes") || null,
         winner: alabama ? { ...alabama, score: 91 } : undefined,
         // Added team1Score and team2Score: Alabama 91-76 Grand Canyon
         team1Score: 91,
@@ -791,7 +788,7 @@ export function TournamentBracket({ tournamentId, leagueSquads }: TournamentBrac
       games.push({
         id: "r2-w-2",
         team1: clemson,
-        team2: teams.find(t => t.name === "Baylor Bears"),
+        team2: teams.find(t => t.name === "Baylor Bears") || null,
         winner: clemson ? { ...clemson, score: 72 } : undefined,
         // Added team1Score and team2Score: Clemson 72-64 Baylor
         team1Score: 72,
@@ -803,7 +800,7 @@ export function TournamentBracket({ tournamentId, leagueSquads }: TournamentBrac
       games.push({
         id: "r2-w-3",
         team1: northCarolina,
-        team2: teams.find(t => t.name === "Michigan State Spartans"),
+        team2: teams.find(t => t.name === "Michigan State Spartans") || null,
         winner: northCarolina ? { ...northCarolina, score: 85 } : undefined,
         // Added team1Score and team2Score: UNC 85-69 Michigan State
         team1Score: 85,
@@ -898,11 +895,11 @@ export function TournamentBracket({ tournamentId, leagueSquads }: TournamentBrac
       const eastTeams = teams.filter((t) => t.region === "Eastern Conference").sort((a, b) => a.seed - b.seed)
       const westTeams = teams.filter((t) => t.region === "Western Conference").sort((a, b) => a.seed - b.seed)
 
-      // Find specific teams for real results
-      const celtics = teams.find(t => t.name === "Boston Celtics")
-      const mavericks = teams.find(t => t.name === "Dallas Mavericks")
-      const pacers = teams.find(t => t.name === "Indiana Pacers")
-      const timberwolves = teams.find(t => t.name === "Minnesota Timberwolves")
+      // Find specific teams for real results - added || null to fix undefined vs null type mismatch
+      const celtics = teams.find(t => t.name === "Boston Celtics") || null
+      const mavericks = teams.find(t => t.name === "Dallas Mavericks") || null
+      const pacers = teams.find(t => t.name === "Indiana Pacers") || null
+      const timberwolves = teams.find(t => t.name === "Minnesota Timberwolves") || null
 
       // Eastern Conference First Round - All completed with team1Score and team2Score
       // Added team1Score and team2Score arrays for NBA series (representing clinching game scores)

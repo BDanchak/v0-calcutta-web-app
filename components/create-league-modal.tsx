@@ -52,25 +52,9 @@ export function CreateLeagueModal({ children, onLeagueCreated }: CreateLeagueMod
   const { toast } = useToast()
   const { user } = useAuth()
 
+  // Removed all tournament dates except NFL Playoffs 2025 per user request
   const tournamentDates: { [key: string]: Date } = {
-    "march-madness-2025": new Date("2025-03-18"),
-    "march-madness-womens-2025": new Date("2025-03-19"),
-    "world-cup-2025": new Date("2025-06-11"),
-    "nba-playoffs-2025": new Date("2025-04-19"),
     "nfl-playoffs-2025": new Date("2025-01-11"),
-    "stanley-cup-2025": new Date("2025-04-16"),
-    "masters-2025": new Date("2025-04-10"),
-    "champions-league-2025": new Date("2025-05-31"),
-    "masters-2026": new Date("2026-04-09"),
-    "pga-championship-2026": new Date("2026-05-14"),
-    "us-open-2026": new Date("2026-06-18"),
-    "open-championship-2026": new Date("2026-07-16"),
-    "us-open-tennis-2025": new Date("2025-08-25"),
-    "epl-2025": new Date("2025-08-16"),
-    "2025-ryder-cup": new Date("2025-09-26"),
-    "2025-cancun-challenge": new Date("2025-11-25"),
-    "nfl-playoffs-2024-example": new Date("2024-01-13"),
-    "nfl-playoffs-2026": new Date("2026-01-10"),
   }
 
   const getClosestUpcomingTournament = () => {
@@ -88,117 +72,17 @@ export function CreateLeagueModal({ children, onLeagueCreated }: CreateLeagueMod
       }
     })
 
-    return closestTournament || "march-madness-2025"
+    // Updated fallback to NFL Playoffs 2025 since march-madness-2025 was removed
+    return closestTournament || "nfl-playoffs-2025"
   }
 
+  // Removed all tournament options except NFL Playoffs 2025 per user request
   const tournaments = [
-    {
-      id: "march-madness-2025",
-      name: "March Madness 2025",
-      description: "NCAA Men's Basketball Tournament",
-      date: "March 17 - April 7, 2025",
-    },
-    {
-      id: "march-madness-womens-2025",
-      name: "March Madness Women's 2025",
-      description: "NCAA Women's Basketball Tournament",
-      date: "March 19 - April 6, 2025",
-    },
-    {
-      id: "world-cup-2025",
-      name: "World Cup 2025",
-      description: "FIFA World Cup Tournament",
-      date: "June 11 - July 19, 2026",
-    },
-    {
-      id: "nba-playoffs-2025",
-      name: "NBA Playoffs 2025",
-      description: "National Basketball Association Playoffs",
-      date: "April 19 - June 22, 2025",
-    },
     {
       id: "nfl-playoffs-2025",
       name: "NFL Playoffs 2025",
       description: "National Football League Playoffs",
       date: "January 11 - February 9, 2025",
-    },
-    {
-      id: "stanley-cup-2025",
-      name: "Stanley Cup 2025",
-      description: "National Hockey League Championship",
-      date: "April - June 2025",
-    },
-    {
-      id: "masters-2025",
-      name: "Masters Tournament 2025",
-      description: "Professional Golf Championship",
-      date: "April 10-13, 2025",
-    },
-    {
-      id: "champions-league-2025",
-      name: "Champions League 2025",
-      description: "UEFA Champions League",
-      date: "September 2024 - May 2025",
-    },
-    {
-      id: "masters-2026",
-      name: "Masters Tournament 2026",
-      description: "Augusta National Golf Club - April 2026",
-      date: "April 9-12, 2026",
-    },
-    {
-      id: "pga-championship-2026",
-      name: "PGA Championship 2026",
-      description: "Professional Golfers' Association Championship - May 2026",
-      date: "May 14-17, 2026",
-    },
-    {
-      id: "us-open-2026",
-      name: "U.S. Open 2026",
-      description: "United States Golf Association Championship - June 2026",
-      date: "June 18-21, 2026",
-    },
-    {
-      id: "open-championship-2026",
-      name: "The Open Championship 2026",
-      description: "British Open Golf Championship - July 2026",
-      date: "July 16-19, 2026",
-    },
-    {
-      id: "us-open-tennis-2025",
-      name: "US Open Tennis 2025",
-      description: "United States Tennis Association Championship - August/September 2025",
-      date: "August 25 - September 7, 2025",
-    },
-    {
-      id: "epl-2025",
-      name: "English Premier League 2025",
-      description: "Premier League Football Season 2024-25",
-      date: "August 2024 - May 2025",
-    },
-    {
-      id: "2025-ryder-cup",
-      name: "2025 Ryder Cup",
-      description: "Prestigious biennial golf competition between Europe and USA - September 2025",
-      date: "September 26-28, 2025",
-    },
-    {
-      id: "2025-cancun-challenge",
-      name: "2025 Cancun Challenge",
-      description: "Men's College Basketball Tournament - Cancun, Mexico 2025",
-      date: "November 25-27, 2025",
-    },
-    {
-      id: "nfl-playoffs-2026",
-      name: "NFL Playoffs 2026",
-      description: "National Football League Playoffs",
-      date: "January 10 - February 8, 2026",
-    },
-    {
-      id: "nfl-playoffs-2024-example",
-      name: "2024 NFL Playoffs (EXAMPLE)",
-      description: "Example tournament for testing and practice - 2024 NFL Playoffs",
-      date: "January 2024",
     },
   ]
 
