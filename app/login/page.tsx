@@ -51,7 +51,8 @@ export default function LoginPage() {
         <Card className="w-full max-w-md">
           <CardHeader className="text-center">
             <div className="flex justify-center mb-4">
-              <img src="/cf-logo.png" alt="Calcutta Fantasy" className="h-12 w-auto" />
+              {/* Updated logo src to use the new transparent Calcutta Fantasy logo */}
+              <img src="/images/calcutta-fantasy-logo.jpg" alt="Calcutta Fantasy" className="h-12 w-auto" />
             </div>
             <CardTitle className="text-2xl">Welcome Back</CardTitle>
             <CardDescription>Sign in to your Calcutta Fantasy account</CardDescription>

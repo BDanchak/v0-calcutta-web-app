@@ -18,7 +18,8 @@ export default function ClientLayout({
 
   return (
     <AuthProvider>
-      <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
+      {/* Changed defaultTheme from "system" to "dark" so the site opens in dark mode by default for all users */}
+      <ThemeProvider attribute="class" defaultTheme="dark" enableSystem disableTransitionOnChange>
         <div className="min-h-screen flex flex-col">
           <main className="flex-1">{children}</main>
           {!isAuctionPage && <Footer />}
