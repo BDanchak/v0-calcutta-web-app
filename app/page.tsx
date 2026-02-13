@@ -139,7 +139,8 @@ export default function HomePage() {
             <div className="flex justify-center mb-8">
               <div className="relative">
                 {/* Replaced .jpg logo with new transparent background .png logo per user request */}
-                <img src="/images/calcutta-fantasy-logo-transparent.png" alt="Calcutta Fantasy" className="h-48 w-auto" />
+                {/* Enlarged logo from h-48 to h-72 per user request */}
+                <img src="/images/calcutta-fantasy-logo-transparent.png" alt="Calcutta Fantasy" className="h-72 w-auto" />
               </div>
             </div>
             <h1 className="text-4xl font-bold tracking-tight text-foreground sm:text-6xl">
