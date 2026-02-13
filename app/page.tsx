@@ -138,8 +138,8 @@ export default function HomePage() {
           <div className="text-center">
             <div className="flex justify-center mb-8">
               <div className="relative">
-                {/* Updated logo src to use the new transparent Calcutta Fantasy logo */}
-                <img src="/images/calcutta-fantasy-logo.jpg" alt="Calcutta Fantasy" className="h-48 w-auto" />
+                {/* Replaced .jpg logo with new transparent background .png logo per user request */}
+                <img src="/images/calcutta-fantasy-logo-transparent.png" alt="Calcutta Fantasy" className="h-48 w-auto" />
               </div>
             </div>
             <h1 className="text-4xl font-bold tracking-tight text-foreground sm:text-6xl">
@@ -398,8 +398,8 @@ export default function HomePage() {
                 size="lg"
                 className="bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90 text-white px-8 py-3 text-lg"
               >
-                {/* Updated logo src to use the new transparent Calcutta Fantasy logo */}
-                <img src="/images/calcutta-fantasy-logo.jpg" alt="" className="h-5 w-auto mr-2" />
+                {/* Replaced .jpg logo with new transparent background .png logo per user request */}
+                <img src="/images/calcutta-fantasy-logo-transparent.png" alt="" className="h-5 w-auto mr-2" />
                 Create Your League
               </Button>
             </CreateLeagueModal>

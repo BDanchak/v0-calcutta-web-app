@@ -61,8 +61,8 @@ export function Navigation() {
           <div className="flex h-16 justify-between">
             <div className="flex items-center">
               <Link href="/" className="flex items-center space-x-2">
-                {/* Updated logo src to use the new transparent Calcutta Fantasy logo */}
-                <img src="/images/calcutta-fantasy-logo.jpg" alt="Calcutta Fantasy" className="h-8 w-auto" />
+                {/* Replaced .jpg logo with new transparent background .png logo per user request */}
+                <img src="/images/calcutta-fantasy-logo-transparent.png" alt="Calcutta Fantasy" className="h-8 w-auto" />
                 <span className="text-xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
                   Calcutta Fantasy
                 </span>
