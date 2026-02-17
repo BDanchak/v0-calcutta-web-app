@@ -55,6 +55,8 @@ export function CreateLeagueModal({ children, onLeagueCreated }: CreateLeagueMod
   // Removed all tournament dates except NFL Playoffs 2025 per user request
   const tournamentDates: { [key: string]: Date } = {
     "nfl-playoffs-2025": new Date("2025-01-11"),
+    // Added Survivor 50 tournament date (premieres Feb 25, 2026) per user request
+    "survivor-50": new Date("2026-02-25"),
   }
 
   const getClosestUpcomingTournament = () => {
@@ -83,6 +85,13 @@ export function CreateLeagueModal({ children, onLeagueCreated }: CreateLeagueMod
       name: "NFL Playoffs 2025",
       description: "National Football League Playoffs",
       date: "January 11 - February 9, 2025",
+    },
+    // Added Survivor Season 50 tournament with all 24 returning contestants per user request
+    {
+      id: "survivor-50",
+      name: "Survivor 50",
+      description: "Survivor Season 50 - Returning All-Stars (24 Contestants)",
+      date: "February 25, 2026",
     },
   ]
 
