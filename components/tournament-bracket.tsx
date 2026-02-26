@@ -248,10 +248,13 @@ const getTournamentData = (tournamentId: string) => {
       }
 
     /* Added Survivor Season 50 case with all 24 returning contestants per user request */
+    /* Updated rounds to episode-based elimination format that advances left to right per user request */
     case "Survivor 50":
     case "survivor-50":
       return {
         name: "Survivor 50",
+        /* isSurvivor flag used to trigger elimination-style bracket rendering per user request */
+        isSurvivor: true,
         teams: [
           // Old School players (Seasons 1-39)
           { id: 1, name: "Jenna Lewis-Dougherty", seed: 1, region: "Old School" },
@@ -280,7 +283,12 @@ const getTournamentData = (tournamentId: string) => {
           { id: 23, name: "Savannah Louie", seed: 11, region: "New School" },
           { id: 24, name: "Rizo Velovic", seed: 12, region: "New School" },
         ],
-        rounds: ["Pre-Merge", "Merge", "Final Tribal Council"],
+        /* Episode-based rounds: 14 episodes typical for Survivor, advancing left to right per user request */
+        rounds: [
+          "Episode 1", "Episode 2", "Episode 3", "Episode 4", "Episode 5",
+          "Episode 6", "Episode 7", "Episode 8", "Episode 9", "Episode 10",
+          "Episode 11", "Episode 12", "Episode 13", "Finale",
+        ],
       }
 
     default:
@@ -1166,6 +1174,11 @@ export function TournamentBracket({ tournamentId, leagueSquads }: TournamentBrac
         round: "NBA Finals",
         completed: false,
       })
+    /* Added Survivor 50 elimination bracket: no matchup games, uses episode-based rendering per user request */
+    } else if ("isSurvivor" in tournamentData && tournamentData.isSurvivor) {
+      // Survivor uses elimination-style rendering, not head-to-head matchups
+      // No games are generated; the component renders contestants per episode column instead
+      return games
     } else if (tournamentData.name.includes("Cancun Challenge")) {
       games.push(
         {
@@ -1360,6 +1373,191 @@ export function TournamentBracket({ tournamentId, leagueSquads }: TournamentBrac
   const completedGames = bracketData.filter((g) => g.completed).length
   const remainingGames = totalGames - completedGames
   const currentRound = bracketData.find((g) => !g.completed)?.round || rounds[rounds.length - 1]
+
+  /* Check if this is Survivor 50 to use elimination-style rendering per user request */
+  const isSurvivor = "isSurvivor" in tournamentData && tournamentData.isSurvivor
+
+  /* Survivor elimination data: tracks which contestants remain per episode per user request */
+  /* Since season hasn't started, all 24 contestants are still in Episode 1 */
+  const survivorEliminationData: Record<string, number[]> = {}
+  if (isSurvivor) {
+    const allContestantIds = tournamentData.teams.map(t => t.id)
+    // Episode 1: all contestants still in the game (season hasn't aired yet)
+    rounds.forEach((round, idx) => {
+      if (idx === 0) {
+        survivorEliminationData[round] = allContestantIds
+      } else {
+        // Future episodes: empty until results come in
+        survivorEliminationData[round] = []
+      }
+    })
+  }
+
+  /* Survivor-specific bracket render: scrollable left-to-right elimination columns per user request */
+  if (isSurvivor) {
+    const eliminatedCount = 0 // No one eliminated yet since season hasn't started
+    const remainingCount = tournamentData.teams.length
+
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center justify-between">
+            <span>{tournamentData.name} - Live Elimination Bracket</span>
+            <Badge className="bg-primary text-primary-foreground">Episode 1</Badge>
+          </CardTitle>
+          <CardDescription>
+            Scroll left and right to follow contestant eliminations across each episode through the finale
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            {/* Survivor Progress Summary */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 p-3 bg-muted/30 rounded-lg">
+              <div className="text-center">
+                <div className="text-2xl font-bold text-primary">{remainingCount}</div>
+                <div className="text-sm text-muted-foreground">Contestants Remaining</div>
+              </div>
+              <div className="text-center">
+                <div className="text-2xl font-bold text-foreground">{tournamentData.teams.length}</div>
+                <div className="text-sm text-muted-foreground">Total Contestants</div>
+              </div>
+              <div className="text-center">
+                <div className="text-2xl font-bold text-muted-foreground">{eliminatedCount}</div>
+                <div className="text-sm text-muted-foreground">Eliminated</div>
+              </div>
+              <div className="text-center">
+                <div className="text-2xl font-bold text-primary">{rounds.length}</div>
+                <div className="text-sm text-muted-foreground">Total Episodes</div>
+              </div>
+            </div>
+
+            {/* Horizontally scrollable episode columns per user request */}
+            <div className="overflow-x-auto pb-4" style={{ scrollbarWidth: "thin" }}>
+              <div className="min-w-max flex gap-3">
+                {rounds.map((round, roundIndex) => {
+                  const contestantIds = survivorEliminationData[round] || []
+                  const contestants = contestantIds
+                    .map(id => tournamentData.teams.find(t => t.id === id))
+                    .filter(Boolean) as BracketTeam[]
+                  const isCurrent = roundIndex === 0 // Episode 1 is current since season hasn't started
+                  const isFuture = roundIndex > 0
+
+                  return (
+                    <div key={round} className="flex-shrink-0" style={{ width: "220px" }}>
+                      {/* Episode header */}
+                      <div className={`sticky top-0 z-10 bg-background pb-2 ${isCurrent ? "" : ""}`}>
+                        <h3 className={`font-bold text-center text-sm pb-1 border-b-2 ${
+                          isCurrent
+                            ? "text-primary border-primary"
+                            : isFuture
+                              ? "text-muted-foreground border-muted"
+                              : "text-foreground border-primary/40"
+                        }`}>
+                          {round}
+                        </h3>
+                        <div className="text-center text-xs text-muted-foreground mt-1">
+                          {contestants.length > 0
+                            ? `${contestants.length} contestant${contestants.length !== 1 ? "s" : ""}`
+                            : "Awaiting results"}
+                        </div>
+                      </div>
+
+                      {/* Contestant list for this episode */}
+                      <div className="space-y-1 mt-2">
+                        {contestants.length > 0 ? (
+                          contestants.map((contestant) => (
+                            <div
+                              key={contestant.id}
+                              className={`flex items-center gap-2 p-2 rounded border transition-all ${
+                                isCurrent
+                                  ? "bg-primary/10 border-primary/30 shadow-sm"
+                                  : "bg-card border-border"
+                              }`}
+                            >
+                              <div className={`flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${
+                                contestant.region === "Old School"
+                                  ? "bg-amber-500/20 text-amber-700"
+                                  : "bg-sky-500/20 text-sky-700"
+                              }`}>
+                                {contestant.id}
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <div className="text-xs font-semibold truncate text-foreground">
+                                  {contestant.name}
+                                </div>
+                                <div className="text-[10px] text-muted-foreground">
+                                  {contestant.region}
+                                </div>
+                              </div>
+                            </div>
+                          ))
+                        ) : (
+                          <div className="text-center text-muted-foreground text-xs py-8 border border-dashed border-muted rounded-lg">
+                            <div className="space-y-1">
+                              <Trophy className="h-6 w-6 mx-auto text-muted-foreground/40" />
+                              <div>{round === "Finale" ? "Final Tribal Council" : "Not yet aired"}</div>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+
+            {/* Squad Points Summary */}
+            <div className="mt-4">
+              <h3 className="text-lg font-bold mb-2 text-primary">Squad Points Summary</h3>
+              <div className="space-y-2">
+                {leagueSquads && leagueSquads.length > 0 ? (
+                  leagueSquads.map((squad, index) => (
+                    <div
+                      key={index}
+                      className={`p-3 border rounded-lg ${index === 0 ? "bg-primary/5 border-primary/20" : ""}`}
+                    >
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <div className="font-medium">{squad.owner}</div>
+                          <div className="text-sm text-muted-foreground">{squad.points} points earned</div>
+                        </div>
+                        <div className={`text-2xl font-bold ${index === 0 ? "text-primary" : "text-foreground"}`}>
+                          {squad.points}
+                        </div>
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <div className="p-3 border rounded-lg">
+                    <div className="text-sm text-muted-foreground">No squads in this league yet</div>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Survivor Legend */}
+            <div className="mt-4 p-3 bg-muted/30 rounded-lg">
+              <h4 className="font-medium mb-2">Legend</h4>
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-3 text-sm">
+                <div className="flex items-center space-x-2">
+                  <div className="w-4 h-4 bg-amber-500/20 rounded-full border border-amber-500/40"></div>
+                  <span>Old School (S1-S39)</span>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <div className="w-4 h-4 bg-sky-500/20 rounded-full border border-sky-500/40"></div>
+                  <span>New School (S40-S49)</span>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <div className="w-4 h-4 bg-primary/10 rounded border border-primary/30"></div>
+                  <span>Currently in Game</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    )
+  }
 
   return (
     <Card>
