@@ -34,6 +34,9 @@ export interface League {
   secondsAfterBid?: number
   showUpcomingTeams?: boolean
   teamOrder?: string
+  /* Added minimumBid and maximumBid fields to League interface per user request for bid range control */
+  minimumBid?: number
+  maximumBid?: number
   inviteCode: string
   joinedMembers: string[] // Array of user IDs who have joined
   budgetsVisible?: boolean

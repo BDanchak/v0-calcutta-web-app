@@ -56,7 +56,8 @@ type SavedAuctionState = {
 export function RealTimeAuction({ leagueId, isCommissioner, userId }: RealTimeAuctionProps) {
   const [currentTeamIndex, setCurrentTeamIndex] = useState(0)
   const [timeRemaining, setTimeRemaining] = useState(30)
-  const [currentBid, setCurrentBid] = useState(50)
+  /* Changed initial bid from 50 to 0 so auctions start at $0 per user request */
+  const [currentBid, setCurrentBid] = useState(0)
   const [bidAmount, setBidAmount] = useState("")
   const [highestBidder, setHighestBidder] = useState("No bids yet")
   const [highestBidderId, setHighestBidderId] = useState<string | null>(null)
@@ -81,6 +82,9 @@ export function RealTimeAuction({ leagueId, isCommissioner, userId }: RealTimeAu
     showUpcomingTeams: league?.showUpcomingTeams !== false,
     teamOrder: league?.teamOrder || "seed-order",
     budgetsVisible: league?.budgetsVisible !== false,
+    /* Added minimumBid (defaults to 0) and maximumBid from league settings per user request */
+    minimumBid: league?.minimumBid ?? 0,
+    maximumBid: league?.maximumBid,
   }
 
   // Base budget used for the budget progress calculation
@@ -262,6 +266,10 @@ export function RealTimeAuction({ leagueId, isCommissioner, userId }: RealTimeAu
     if (auctionSettings.enableSpendingLimit && bid > myRemainingBudget) {
       return
     }
+    /* Added maximum bid validation per user request */
+    if (auctionSettings.maximumBid !== undefined && bid > auctionSettings.maximumBid) {
+      return
+    }
     if (bid > currentBid && auctionStatus === "active") {
       setCurrentBid(bid)
       setHighestBidder("You")
@@ -331,7 +339,8 @@ export function RealTimeAuction({ leagueId, isCommissioner, userId }: RealTimeAu
 
     if (nextIndex < tournamentTeams.length) {
       setCurrentTeamIndex(nextIndex)
-      setCurrentBid(50)
+      /* Changed from 50 to minimumBid (defaults to 0) so next team starts at configured minimum per user request */
+      setCurrentBid(auctionSettings.minimumBid)
       setHighestBidder("No bids yet")
       setHighestBidderId(null)
       setBidHistory([])
@@ -430,7 +439,8 @@ export function RealTimeAuction({ leagueId, isCommissioner, userId }: RealTimeAu
         setHighestBidderId(saved.highestBidderId)
         setBidHistory(saved.bidHistory)
       } else {
-        setCurrentBid(50)
+        /* Changed from 50 to minimumBid (defaults to 0) per user request */
+        setCurrentBid(auctionSettings.minimumBid)
         setHighestBidder("No bids yet")
         setHighestBidderId(null)
         setBidHistory([])
@@ -446,7 +456,8 @@ export function RealTimeAuction({ leagueId, isCommissioner, userId }: RealTimeAu
     const { derivedIndex, derivedTimeRemaining, derivedStatus, derivedHighestBidderId } = computeDerived()
     setCurrentTeamIndex(derivedIndex)
     setTimeRemaining(derivedTimeRemaining)
-    setCurrentBid(50)
+    /* Changed from 50 to minimumBid (defaults to 0) per user request */
+    setCurrentBid(auctionSettings.minimumBid)
     setHighestBidder("No bids yet")
     setHighestBidderId(derivedHighestBidderId)
     setBidHistory([])
@@ -732,11 +743,16 @@ export function RealTimeAuction({ leagueId, isCommissioner, userId }: RealTimeAu
                 <div className="flex space-x-2">
                   <Input
                     type="number"
-                    placeholder={`Minimum: $${currentBid + 10}`}
+                    /* Updated placeholder to show minimum bid increment starting from $0 per user request */
+                    placeholder={`Minimum: $${currentBid + 1}`}
                     value={bidAmount}
                     onChange={(e) => setBidAmount(e.target.value)}
-                    min={currentBid + 10}
-                    max={auctionSettings.enableSpendingLimit ? myRemainingBudget : undefined}
+                    /* Changed min increment from +10 to +1 to allow bids starting from $0 per user request */
+                    min={currentBid + 1}
+                    /* Updated max to also respect maximumBid league setting per user request */
+                    max={auctionSettings.maximumBid !== undefined
+                      ? (auctionSettings.enableSpendingLimit ? Math.min(myRemainingBudget, auctionSettings.maximumBid) : auctionSettings.maximumBid)
+                      : (auctionSettings.enableSpendingLimit ? myRemainingBudget : undefined)}
                     className="flex-1"
                   />
                   <Button
@@ -745,7 +761,9 @@ export function RealTimeAuction({ leagueId, isCommissioner, userId }: RealTimeAu
                       !bidAmount ||
                       Number.parseInt(bidAmount) <= currentBid ||
                       auctionStatus !== "active" ||
-                      (auctionSettings.enableSpendingLimit && Number.parseInt(bidAmount) > myRemainingBudget)
+                      (auctionSettings.enableSpendingLimit && Number.parseInt(bidAmount) > myRemainingBudget) ||
+                      /* Added maximumBid validation to disable button per user request */
+                      (auctionSettings.maximumBid !== undefined && Number.parseInt(bidAmount) > auctionSettings.maximumBid)
                     }
                     className="bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90"
                   >
