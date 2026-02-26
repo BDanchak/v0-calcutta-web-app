@@ -107,6 +107,9 @@ export function CreateLeagueModal({ children, onLeagueCreated }: CreateLeagueMod
     customInviteCode: "",
     enableSpendingLimit: false,
     spendingLimit: "500",
+    /* Added minimumBid and maximumBid form fields per user request for bid range options in Create New League */
+    minimumBid: "0",
+    maximumBid: "",
     secondsPerTeam: "30",
     secondsBetweenTeams: "10",
     secondsAfterBid: "5",
@@ -243,6 +246,9 @@ export function CreateLeagueModal({ children, onLeagueCreated }: CreateLeagueMod
         customInviteCode: formData.customInviteCode,
         enableSpendingLimit: formData.enableSpendingLimit,
         spendingLimit: formData.enableSpendingLimit ? Number.parseFloat(formData.spendingLimit) : undefined,
+        /* Pass minimumBid and maximumBid values to league store per user request */
+        minimumBid: Number.parseFloat(formData.minimumBid) || 0,
+        maximumBid: formData.maximumBid ? Number.parseFloat(formData.maximumBid) : undefined,
         secondsPerTeam: Number.parseInt(formData.secondsPerTeam),
         secondsBetweenTeams: Number.parseInt(formData.secondsBetweenTeams),
         secondsAfterBid: Number.parseInt(formData.secondsAfterBid),
@@ -273,6 +279,9 @@ export function CreateLeagueModal({ children, onLeagueCreated }: CreateLeagueMod
         customInviteCode: "",
         enableSpendingLimit: false,
         spendingLimit: "500",
+        /* Reset minimumBid and maximumBid on form reset per user request */
+        minimumBid: "0",
+        maximumBid: "",
         secondsPerTeam: "30",
         secondsBetweenTeams: "10",
         secondsAfterBid: "5",
@@ -440,6 +449,36 @@ export function CreateLeagueModal({ children, onLeagueCreated }: CreateLeagueMod
                   onChange={(e) => handleInputChange("customInviteCode", e.target.value.toUpperCase())}
                   maxLength={8}
                 />
+              </div>
+            </div>
+
+            {/* Added Minimum Bid and Maximum Bid input fields per user request */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="minimumBid">Minimum Bid ($)</Label>
+                <Input
+                  id="minimumBid"
+                  type="number"
+                  min="0"
+                  step="1"
+                  placeholder="0"
+                  value={formData.minimumBid}
+                  onChange={(e) => handleInputChange("minimumBid", e.target.value)}
+                />
+                <p className="text-xs text-muted-foreground">The starting bid for each auction item</p>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="maximumBid">Maximum Bid ($)</Label>
+                <Input
+                  id="maximumBid"
+                  type="number"
+                  min="0"
+                  step="1"
+                  placeholder="No limit"
+                  value={formData.maximumBid}
+                  onChange={(e) => handleInputChange("maximumBid", e.target.value)}
+                />
+                <p className="text-xs text-muted-foreground">The maximum allowed bid per item (leave empty for no limit)</p>
               </div>
             </div>
 
