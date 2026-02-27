@@ -232,7 +232,8 @@ export function CreateLeagueModal({ children, onLeagueCreated }: CreateLeagueMod
     }
 
     try {
-      const newLeague = leagueStore.getState().createLeague({
+      /* Added await for async createLeague per Supabase persistence update */
+      const newLeague = await leagueStore.getState().createLeague({
         name: formData.name,
         description: formData.description,
         tournament: formData.tournament,

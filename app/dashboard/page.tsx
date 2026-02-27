@@ -43,6 +43,11 @@ export default function DashboardPage() {
     }
   }, [user, isLoading])
 
+  /* Added useEffect to fetch leagues from Supabase on mount per user request to fix data loss on refresh */
+  useEffect(() => {
+    leagueStore.getState().fetchLeagues()
+  }, [])
+
   useEffect(() => {
     const refreshData = () => {
       if (user) {
