@@ -295,7 +295,9 @@ export default function LeaguePage() {
 
   // Dynamic participants based on league status and actual members
   const getLeaderboardData = () => {
-    const allMembers = new Set([...league.joinedMembers, league.createdBy])
+    /* Added null check to prevent "Cannot read properties of undefined (reading 'joinedMembers')" error */
+    if (!league) return []
+    const allMembers = new Set([...(league.joinedMembers || []), league.createdBy])
 
     if (league?.status === "upcoming") {
       // Before tournament starts - everyone at 0
