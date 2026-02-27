@@ -17,6 +17,11 @@ export default function LeagueAuctionPage() {
   const league = leagueStore.getState().getLeague(leagueId)
   const { user } = useAuth()
 
+  /* Added useEffect to fetch leagues from Supabase on mount per user request to fix data loss on refresh */
+  useEffect(() => {
+    leagueStore.getState().fetchLeagues()
+  }, [])
+
   // Mock auction state
   const [currentTeam, setCurrentTeam] = useState({
     id: 1,

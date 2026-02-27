@@ -36,7 +36,8 @@ export function JoinLeagueModal({ children, onLeagueJoined }: JoinLeagueModalPro
 
   const handleJoinLeague = async (leagueId: number, leagueName: string) => {
     if (user) {
-      const success = leagueStore.getState().joinLeague(leagueId.toString(), user.id)
+      /* Added await for async joinLeague per Supabase persistence update */
+      const success = await leagueStore.getState().joinLeague(leagueId.toString(), user.id)
       if (success) {
         toast({
           title: "League Joined!",

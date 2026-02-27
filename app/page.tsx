@@ -115,6 +115,11 @@ export default function HomePage() {
     return () => clearInterval(interval)
   }, [])
 
+  /* Added useEffect to fetch leagues from Supabase on mount per user request to fix data loss on refresh */
+  useEffect(() => {
+    leagueStore.getState().fetchLeagues()
+  }, [])
+
   useEffect(() => {
     const updateLeagueCount = () => {
       const totalLeagues = leagueStore.getState().leagues.length

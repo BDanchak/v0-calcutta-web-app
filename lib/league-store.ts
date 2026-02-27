@@ -1,4 +1,6 @@
 import { create } from "zustand"
+/* Added Supabase client import for database persistence per user request to fix data loss on page refresh */
+import { createClient } from "@/lib/supabase/client"
 
 export interface Squad {
   id: string
@@ -97,17 +99,23 @@ interface LeagueStore {
   messages: LeagueMessage[]
   directMessages: DirectMessage[]
   recentActivities: RecentActivity[]
+  /* Added isLoading flag to track Supabase data fetch status per user request */
+  isLoading: boolean
+  /* Added fetchLeagues function to load leagues from Supabase per user request */
+  fetchLeagues: () => Promise<void>
   getUserLeagues: (userId: string) => League[]
   getLeague: (id: string) => League | undefined
+  /* Changed createLeague to async to support Supabase persistence per user request */
   createLeague: (
     leagueData: Omit<League, "id" | "createdAt" | "inviteCode" | "joinedMembers" | "squads"> & {
       customInviteCode?: string
     },
-  ) => League
+  ) => Promise<League>
   updateLeague: (id: string, updates: Partial<League>) => void
   deleteLeague: (id: string) => void
   getAllLeagues: () => League[]
-  joinLeague: (leagueId: string, userId: string, inviteCode?: string) => boolean
+  /* Changed joinLeague to async to support Supabase persistence per user request */
+  joinLeague: (leagueId: string, userId: string, inviteCode?: string) => Promise<boolean>
   isUserMember: (leagueId: string, userId: string) => boolean
   removeUserFromLeague: (leagueId: string, userId: string) => void
   getLeagueMessages: (leagueId: string) => LeagueMessage[]
@@ -397,6 +405,79 @@ const initialRecentActivities: RecentActivity[] = [
     earnings: 15,
   },
 ]
+
+/* Helper function to convert League to Supabase row format per user request */
+function leagueToSupabaseRow(league: League) {
+  return {
+    id: league.id,
+    name: league.name,
+    description: league.description,
+    tournament: league.tournament,
+    tournament_name: league.tournamentName,
+    status: league.status,
+    members: league.members,
+    max_members: league.maxMembers,
+    entry_fee: league.entryFee,
+    auction_date: league.auctionDate,
+    auction_time: league.auctionTime,
+    is_public: league.isPublic,
+    created_by: league.createdBy,
+    created_at: league.createdAt,
+    invite_code: league.inviteCode,
+    joined_members: league.joinedMembers,
+    budgets_visible: league.budgetsVisible,
+    enable_squads: league.enableSquads,
+    number_of_squads: league.numberOfSquads,
+    spending_limit: league.spendingLimit,
+    enable_spending_limit: league.enableSpendingLimit,
+    seconds_per_team: league.secondsPerTeam,
+    seconds_between_teams: league.secondsBetweenTeams,
+    seconds_after_bid: league.secondsAfterBid,
+    show_upcoming_teams: league.showUpcomingTeams,
+    team_order: league.teamOrder,
+    minimum_bid: league.minimumBid,
+    maximum_bid: league.maximumBid,
+    squads: league.squads ? JSON.stringify(league.squads) : null,
+    auction_participants: league.auctionParticipants ? JSON.stringify(league.auctionParticipants) : null,
+  }
+}
+
+/* Helper function to convert Supabase row to League format per user request */
+function supabaseRowToLeague(row: Record<string, unknown>): League {
+  return {
+    id: row.id as string,
+    name: row.name as string,
+    description: row.description as string,
+    tournament: row.tournament as string,
+    tournamentName: row.tournament_name as string,
+    status: row.status as "upcoming" | "active" | "completed",
+    members: row.members as number,
+    maxMembers: row.max_members as number,
+    entryFee: Number(row.entry_fee),
+    auctionDate: row.auction_date as string,
+    auctionTime: row.auction_time as string,
+    isPublic: row.is_public as boolean,
+    createdBy: row.created_by as string,
+    createdAt: row.created_at as string,
+    inviteCode: row.invite_code as string,
+    joinedMembers: (row.joined_members as string[]) || [],
+    budgetsVisible: row.budgets_visible as boolean,
+    enableSquads: row.enable_squads as boolean,
+    numberOfSquads: row.number_of_squads as number,
+    spendingLimit: row.spending_limit ? Number(row.spending_limit) : undefined,
+    enableSpendingLimit: row.enable_spending_limit as boolean,
+    secondsPerTeam: row.seconds_per_team as number,
+    secondsBetweenTeams: row.seconds_between_teams as number,
+    secondsAfterBid: row.seconds_after_bid as number,
+    showUpcomingTeams: row.show_upcoming_teams as boolean,
+    teamOrder: row.team_order as string,
+    minimumBid: row.minimum_bid ? Number(row.minimum_bid) : undefined,
+    maximumBid: row.maximum_bid ? Number(row.maximum_bid) : undefined,
+    squads: row.squads ? (typeof row.squads === 'string' ? JSON.parse(row.squads) : row.squads) : undefined,
+    auctionParticipants: row.auction_participants ? (typeof row.auction_participants === 'string' ? JSON.parse(row.auction_participants) : row.auction_participants) : undefined,
+    nextAction: "View League",
+  }
+}
 
 // Tournament team data
 const tournamentTeams: Record<string, TournamentTeam[]> = {
@@ -1050,6 +1131,41 @@ export const leagueStore = create<LeagueStore>((set, get) => ({
   messages: [...initialMessages],
   directMessages: [],
   recentActivities: [...initialRecentActivities],
+  /* Added isLoading state for tracking Supabase fetch status per user request */
+  isLoading: false,
+
+  /* Added fetchLeagues to load leagues from Supabase on app init per user request to fix data loss on refresh */
+  fetchLeagues: async () => {
+    set({ isLoading: true })
+    try {
+      const supabase = createClient()
+      const { data, error } = await supabase
+        .from("leagues")
+        .select("*")
+        .order("created_at", { ascending: false })
+
+      if (error) {
+        console.error("[v0] Error fetching leagues from Supabase:", error)
+        set({ isLoading: false })
+        return
+      }
+
+      if (data && data.length > 0) {
+        /* Convert Supabase rows to League format and merge with mock data per user request */
+        const supabaseLeagues = data.map(supabaseRowToLeague)
+        /* Keep mock leagues that don't exist in Supabase, add Supabase leagues */
+        const mockLeagueIds = new Set(initialLeagues.map(l => l.id))
+        const supabaseLeagueIds = new Set(supabaseLeagues.map(l => l.id))
+        const mockOnlyLeagues = initialLeagues.filter(l => !supabaseLeagueIds.has(l.id))
+        set({ leagues: [...supabaseLeagues, ...mockOnlyLeagues], isLoading: false })
+      } else {
+        set({ isLoading: false })
+      }
+    } catch (err) {
+      console.error("[v0] Exception fetching leagues:", err)
+      set({ isLoading: false })
+    }
+  },
 
   getUserLeagues: (userId: string) => {
     return get().leagues.filter((league) => league.createdBy === userId || league.joinedMembers.includes(userId))
@@ -1059,7 +1175,8 @@ export const leagueStore = create<LeagueStore>((set, get) => ({
     return get().leagues.find((league) => league.id === id)
   },
 
-  createLeague: (
+  /* Changed createLeague to async for Supabase persistence per user request to fix data loss on refresh */
+  createLeague: async (
     leagueData: Omit<League, "id" | "createdAt" | "inviteCode" | "joinedMembers" | "squads"> & {
       customInviteCode?: string
     },
@@ -1111,6 +1228,17 @@ export const leagueStore = create<LeagueStore>((set, get) => ({
       auctionParticipants: auctionParticipants,
     }
 
+    /* Persist league to Supabase per user request to fix data loss on refresh */
+    try {
+      const supabase = createClient()
+      const { error } = await supabase.from("leagues").insert(leagueToSupabaseRow(newLeague))
+      if (error) {
+        console.error("[v0] Error saving league to Supabase:", error)
+      }
+    } catch (err) {
+      console.error("[v0] Exception saving league to Supabase:", err)
+    }
+
     set((state) => ({
       leagues: [...state.leagues, newLeague],
     }))
@@ -1125,23 +1253,49 @@ export const leagueStore = create<LeagueStore>((set, get) => ({
     return newLeague
   },
 
+  /* Updated updateLeague to persist changes to Supabase per user request */
   updateLeague: (id: string, updates: Partial<League>) => {
     set((state) => ({
       leagues: state.leagues.map((league) => (league.id === id ? { ...league, ...updates } : league)),
     }))
+
+    /* Persist update to Supabase per user request to fix data loss on refresh */
+    const updatedLeague = get().leagues.find((l) => l.id === id)
+    if (updatedLeague) {
+      const supabase = createClient()
+      supabase
+        .from("leagues")
+        .update(leagueToSupabaseRow(updatedLeague))
+        .eq("id", id)
+        .then(({ error }) => {
+          if (error) console.error("[v0] Error updating league in Supabase:", error)
+        })
+    }
   },
 
+  /* Updated deleteLeague to remove from Supabase per user request */
   deleteLeague: (id: string) => {
     set((state) => ({
       leagues: state.leagues.filter((league) => league.id !== id),
     }))
+
+    /* Remove from Supabase per user request to fix data loss on refresh */
+    const supabase = createClient()
+    supabase
+      .from("leagues")
+      .delete()
+      .eq("id", id)
+      .then(({ error }) => {
+        if (error) console.error("[v0] Error deleting league from Supabase:", error)
+      })
   },
 
   getAllLeagues: () => {
     return get().leagues
   },
 
-  joinLeague: (leagueId: string, userId: string, inviteCode?: string) => {
+  /* Changed joinLeague to async for Supabase persistence per user request */
+  joinLeague: async (leagueId: string, userId: string, inviteCode?: string) => {
     const leagues = get().leagues
     const league = leagues.find((l) => l.id === leagueId)
 
@@ -1185,6 +1339,21 @@ export const leagueStore = create<LeagueStore>((set, get) => ({
       }))
     }
 
+    /* Persist join to Supabase per user request to fix data loss on refresh */
+    const updatedLeague = get().leagues.find((l) => l.id === leagueId)
+    if (updatedLeague) {
+      try {
+        const supabase = createClient()
+        const { error } = await supabase
+          .from("leagues")
+          .update(leagueToSupabaseRow(updatedLeague))
+          .eq("id", leagueId)
+        if (error) console.error("[v0] Error updating league in Supabase after join:", error)
+      } catch (err) {
+        console.error("[v0] Exception updating league in Supabase after join:", err)
+      }
+    }
+
     // Add system message
     const systemMessage: LeagueMessage = {
       id: Math.random().toString(36).substring(2, 15),
@@ -1208,12 +1377,12 @@ export const leagueStore = create<LeagueStore>((set, get) => ({
     })
 
     // Add browser notification for league joining
-    if ("Notification" in window && Notification.permission === "granted") {
+    if (typeof window !== "undefined" && "Notification" in window && Notification.permission === "granted") {
       new Notification("League Joined!", {
         body: `You have successfully joined ${league.name}`,
         icon: "/favicon.ico",
       })
-    } else if ("Notification" in window && Notification.permission !== "denied") {
+    } else if (typeof window !== "undefined" && "Notification" in window && Notification.permission !== "denied") {
       Notification.requestPermission().then((permission) => {
         if (permission === "granted") {
           new Notification("League Joined!", {
@@ -1257,6 +1426,19 @@ export const leagueStore = create<LeagueStore>((set, get) => ({
           : l,
       ),
     }))
+
+    /* Persist removal to Supabase per user request to fix data loss on refresh */
+    const updatedLeague = get().leagues.find((l) => l.id === leagueId)
+    if (updatedLeague) {
+      const supabase = createClient()
+      supabase
+        .from("leagues")
+        .update(leagueToSupabaseRow(updatedLeague))
+        .eq("id", leagueId)
+        .then(({ error }) => {
+          if (error) console.error("[v0] Error updating league in Supabase after removal:", error)
+        })
+    }
 
     // Add recent activity for league removal
     get().addRecentActivity({

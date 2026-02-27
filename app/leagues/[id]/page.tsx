@@ -49,6 +49,11 @@ export default function LeaguePage() {
   const [league, setLeague] = useState(leagueStore.getState().getLeague(leagueId))
   const { user } = useAuth()
 
+  /* Added useEffect to fetch leagues from Supabase on mount per user request to fix data loss on refresh */
+  useEffect(() => {
+    leagueStore.getState().fetchLeagues()
+  }, [])
+
   useEffect(() => {
     const unsubscribe = leagueStore.subscribe(() => {
       const updatedLeague = leagueStore.getState().getLeague(leagueId)

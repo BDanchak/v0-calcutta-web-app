@@ -28,7 +28,8 @@ export function LeagueOverviewModal({ children, league, onLeagueJoined }: League
     if (!user) return
 
     setIsJoining(true)
-    const success = leagueStore.getState().joinLeague(league.id, user.id)
+    /* Added await for async joinLeague per Supabase persistence update */
+    const success = await leagueStore.getState().joinLeague(league.id, user.id)
 
     if (success) {
       toast({

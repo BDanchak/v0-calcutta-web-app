@@ -40,6 +40,11 @@ export default function LeaguesPage() {
     }
   }, [user, isLoading])
 
+  /* Added useEffect to fetch leagues from Supabase on mount per user request to fix data loss on refresh */
+  useEffect(() => {
+    leagueStore.getState().fetchLeagues()
+  }, [])
+
   useEffect(() => {
     const refreshData = () => {
       loadLeagues()
@@ -73,8 +78,10 @@ export default function LeaguesPage() {
     loadLeagues()
   }
 
-  const handleJoinLeague = (leagueId: string) => {
-    if (user && leagueStore.getState().joinLeague(leagueId, user.id)) {
+  /* Changed to async for Supabase persistence per user request */
+  const handleJoinLeague = async (leagueId: string) => {
+    /* Added await for async joinLeague per Supabase persistence update */
+    if (user && await leagueStore.getState().joinLeague(leagueId, user.id)) {
       loadLeagues()
     }
   }
