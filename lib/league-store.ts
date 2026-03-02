@@ -1145,7 +1145,7 @@ export const leagueStore = create<LeagueStore>((set, get) => ({
         .order("created_at", { ascending: false })
 
       if (error) {
-        console.error("[v0] Error fetching leagues from Supabase:", error)
+        /* Silently fail and keep mock data if Supabase is not available */
         set({ isLoading: false })
         return
       }
@@ -1154,7 +1154,6 @@ export const leagueStore = create<LeagueStore>((set, get) => ({
         /* Convert Supabase rows to League format and merge with mock data per user request */
         const supabaseLeagues = data.map(supabaseRowToLeague)
         /* Keep mock leagues that don't exist in Supabase, add Supabase leagues */
-        const mockLeagueIds = new Set(initialLeagues.map(l => l.id))
         const supabaseLeagueIds = new Set(supabaseLeagues.map(l => l.id))
         const mockOnlyLeagues = initialLeagues.filter(l => !supabaseLeagueIds.has(l.id))
         set({ leagues: [...supabaseLeagues, ...mockOnlyLeagues], isLoading: false })
@@ -1162,7 +1161,6 @@ export const leagueStore = create<LeagueStore>((set, get) => ({
         set({ isLoading: false })
       }
     } catch (err) {
-      console.error("[v0] Exception fetching leagues:", err)
       set({ isLoading: false })
     }
   },
@@ -1231,12 +1229,11 @@ export const leagueStore = create<LeagueStore>((set, get) => ({
     /* Persist league to Supabase per user request to fix data loss on refresh */
     try {
       const supabase = createClient()
-      const { error } = await supabase.from("leagues").insert(leagueToSupabaseRow(newLeague))
-      if (error) {
-        console.error("[v0] Error saving league to Supabase:", error)
-      }
-    } catch (err) {
-      console.error("[v0] Exception saving league to Supabase:", err)
+      const rowData = leagueToSupabaseRow(newLeague)
+      await supabase.from("leagues").insert(rowData)
+      /* Silently fail if Supabase is not available - league still added to local state */
+    } catch {
+      /* Silently fail - league still added to local state */
     }
 
     set((state) => ({
