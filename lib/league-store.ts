@@ -1137,8 +1137,6 @@ export const leagueStore = create<LeagueStore>((set, get) => ({
   /* Added fetchLeagues to load leagues from Supabase on app init per user request to fix data loss on refresh */
   fetchLeagues: async () => {
     set({ isLoading: true })
-    /* Debug: Log when fetchLeagues starts */
-    console.log("[v0] fetchLeagues: Starting to fetch leagues from Supabase")
     try {
       const supabase = createClient()
       const { data, error } = await supabase
@@ -1146,11 +1144,8 @@ export const leagueStore = create<LeagueStore>((set, get) => ({
         .select("*")
         .order("created_at", { ascending: false })
 
-      /* Debug: Log the response from Supabase */
-      console.log("[v0] fetchLeagues: Supabase response - data:", data, "error:", error)
-
       if (error) {
-        console.error("[v0] Error fetching leagues from Supabase:", error)
+        /* Silently fail and keep mock data if Supabase is not available */
         set({ isLoading: false })
         return
       }
@@ -1159,19 +1154,13 @@ export const leagueStore = create<LeagueStore>((set, get) => ({
         /* Convert Supabase rows to League format and merge with mock data per user request */
         const supabaseLeagues = data.map(supabaseRowToLeague)
         /* Keep mock leagues that don't exist in Supabase, add Supabase leagues */
-        const mockLeagueIds = new Set(initialLeagues.map(l => l.id))
         const supabaseLeagueIds = new Set(supabaseLeagues.map(l => l.id))
         const mockOnlyLeagues = initialLeagues.filter(l => !supabaseLeagueIds.has(l.id))
-        /* Debug: Log the merged leagues */
-        console.log("[v0] fetchLeagues: Setting leagues from Supabase:", supabaseLeagues.length, "leagues + mock:", mockOnlyLeagues.length)
         set({ leagues: [...supabaseLeagues, ...mockOnlyLeagues], isLoading: false })
       } else {
-        /* Debug: Log when no data found */
-        console.log("[v0] fetchLeagues: No leagues found in Supabase, keeping mock data")
         set({ isLoading: false })
       }
     } catch (err) {
-      console.error("[v0] Exception fetching leagues:", err)
       set({ isLoading: false })
     }
   },
@@ -1241,16 +1230,10 @@ export const leagueStore = create<LeagueStore>((set, get) => ({
     try {
       const supabase = createClient()
       const rowData = leagueToSupabaseRow(newLeague)
-      /* Debug: Log the data being inserted */
-      console.log("[v0] createLeague: Inserting league to Supabase:", rowData)
-      const { data, error } = await supabase.from("leagues").insert(rowData).select()
-      /* Debug: Log the response */
-      console.log("[v0] createLeague: Supabase response - data:", data, "error:", error)
-      if (error) {
-        console.error("[v0] Error saving league to Supabase:", error)
-      }
-    } catch (err) {
-      console.error("[v0] Exception saving league to Supabase:", err)
+      await supabase.from("leagues").insert(rowData)
+      /* Silently fail if Supabase is not available - league still added to local state */
+    } catch {
+      /* Silently fail - league still added to local state */
     }
 
     set((state) => ({
