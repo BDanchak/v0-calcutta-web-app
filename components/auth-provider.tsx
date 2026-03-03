@@ -3,6 +3,8 @@
 import type React from "react"
 
 import { createContext, useContext, useState, useEffect } from "react"
+/* Changed: Import Supabase client per user request to save user accounts to database */
+import { createClient } from "@/lib/supabase/client"
 
 interface User {
   id: string
@@ -26,87 +28,149 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined)
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [isLoading, setIsLoading] = useState(true)
+  /* Changed: Create Supabase client instance for auth operations */
+  const supabase = createClient()
 
   useEffect(() => {
-    // Check if user is logged in (simulate checking localStorage/cookies)
-    const checkAuth = () => {
-      const savedUser = localStorage.getItem("user")
-      if (savedUser) {
-        setUser(JSON.parse(savedUser))
+    /* Changed: Check Supabase auth session instead of localStorage per user request */
+    const checkAuth = async () => {
+      try {
+        /* Changed: Get current session from Supabase Auth */
+        const { data: { session } } = await supabase.auth.getSession()
+        
+        if (session?.user) {
+          /* Changed: Fetch user profile from profiles table in database */
+          const { data: profile } = await supabase
+            .from("profiles")
+            .select("*")
+            .eq("id", session.user.id)
+            .single()
+          
+          /* Changed: Set user from Supabase profile data */
+          setUser({
+            id: session.user.id,
+            name: profile?.name || session.user.user_metadata?.name || session.user.email || "",
+            email: session.user.email || "",
+            phone: profile?.phone || "",
+            emblem: profile?.emblem || "",
+          })
+        }
+      } catch (error) {
+        /* Silently handle auth check errors */
+      } finally {
+        setIsLoading(false)
       }
-      setIsLoading(false)
     }
 
     checkAuth()
-  }, [])
+
+    /* Changed: Listen for auth state changes from Supabase */
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (event === "SIGNED_IN" && session?.user) {
+        /* Changed: Fetch profile when user signs in */
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("*")
+          .eq("id", session.user.id)
+          .single()
+        
+        setUser({
+          id: session.user.id,
+          name: profile?.name || session.user.user_metadata?.name || session.user.email || "",
+          email: session.user.email || "",
+          phone: profile?.phone || "",
+          emblem: profile?.emblem || "",
+        })
+      } else if (event === "SIGNED_OUT") {
+        setUser(null)
+      }
+    })
+
+    return () => {
+      subscription.unsubscribe()
+    }
+  }, [supabase])
 
   const login = async (email: string, password: string) => {
-    // Simulate login API call - in a real app, this would come from the server
-    // For now, check if user exists in localStorage from previous signup
-    const existingUsers = JSON.parse(localStorage.getItem("users") || "[]")
-    const existingUser = existingUsers.find((u: any) => u.email === email && u.password === password)
+    /* Changed: Use Supabase Auth signInWithPassword instead of localStorage per user request */
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    })
 
-    if (!existingUser) {
-      throw new Error("Invalid email or password")
+    if (error) {
+      throw new Error(error.message)
     }
 
-    const mockUser: User = {
-      id: existingUser.id,
-      name: existingUser.name,
-      email: email,
-      phone: existingUser.phone || "",
-      emblem: existingUser.emblem || "",
+    if (data.user) {
+      /* Changed: Fetch user profile from database after successful login */
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("*")
+        .eq("id", data.user.id)
+        .single()
+
+      setUser({
+        id: data.user.id,
+        name: profile?.name || data.user.user_metadata?.name || data.user.email || "",
+        email: data.user.email || "",
+        phone: profile?.phone || "",
+        emblem: profile?.emblem || "",
+      })
     }
-    setUser(mockUser)
-    localStorage.setItem("user", JSON.stringify(mockUser))
   }
 
   const signup = async (name: string, email: string, password: string) => {
-    // Simulate signup API call
-    const mockUser = {
-      id: Date.now().toString(), // Generate unique ID
-      name: name,
-      email: email,
-      password: password, // Store password for login validation
-      phone: "",
-      emblem: "",
+    /* Changed: Use Supabase Auth signUp to save user credentials to database per user request */
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        /* Changed: Store name in user metadata for profile trigger to use */
+        data: {
+          name: name,
+        },
+        /* Changed: Set email redirect URL for confirmation */
+        emailRedirectTo: process.env.NEXT_PUBLIC_DEV_SUPABASE_REDIRECT_URL ||
+          `${window.location.origin}/dashboard`,
+      },
+    })
+
+    if (error) {
+      throw new Error(error.message)
     }
 
-    // Store user in users array for future login
-    const existingUsers = JSON.parse(localStorage.getItem("users") || "[]")
-    const updatedUsers = [...existingUsers.filter((u: any) => u.email !== email), mockUser]
-    localStorage.setItem("users", JSON.stringify(updatedUsers))
-
-    const userToStore: User = {
-      id: mockUser.id,
-      name: mockUser.name,
-      email: mockUser.email,
-      phone: mockUser.phone,
-      emblem: mockUser.emblem,
+    /* Changed: Set user immediately after signup (profile created via database trigger) */
+    if (data.user) {
+      setUser({
+        id: data.user.id,
+        name: name,
+        email: email,
+        phone: "",
+        emblem: "",
+      })
     }
-    setUser(userToStore)
-    localStorage.setItem("user", JSON.stringify(userToStore))
   }
 
   const updateProfile = async (profileData: { name: string; email: string; phone: string; emblem?: string }) => {
     if (!user) return
 
-    // Update user in users array
-    const existingUsers = JSON.parse(localStorage.getItem("users") || "[]")
-    const updatedUsers = existingUsers.map((u: any) =>
-      u.id === user.id
-        ? {
-            ...u,
-            name: profileData.name,
-            email: profileData.email,
-            phone: profileData.phone,
-            emblem: profileData.emblem ?? u.emblem ?? "",
-          }
-        : u,
-    )
-    localStorage.setItem("users", JSON.stringify(updatedUsers))
+    /* Changed: Update profile in Supabase profiles table instead of localStorage per user request */
+    const { error } = await supabase
+      .from("profiles")
+      .update({
+        name: profileData.name,
+        email: profileData.email,
+        phone: profileData.phone,
+        emblem: profileData.emblem ?? user.emblem ?? "",
+      })
+      .eq("id", user.id)
 
-    // Update current user
+    if (error) {
+      throw new Error(error.message)
+    }
+
+    /* Changed: Update local user state after successful database update */
     const updatedUser: User = {
       ...user,
       name: profileData.name,
@@ -115,12 +179,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       emblem: profileData.emblem ?? user.emblem ?? "",
     }
     setUser(updatedUser)
-    localStorage.setItem("user", JSON.stringify(updatedUser))
   }
 
-  const logout = () => {
+  const logout = async () => {
+    /* Changed: Use Supabase Auth signOut instead of localStorage per user request */
+    await supabase.auth.signOut()
     setUser(null)
-    localStorage.removeItem("user")
   }
 
   return (
