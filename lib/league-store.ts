@@ -55,6 +55,8 @@ export interface League {
       remainingBudget: number
     }
   >
+  /* Added user_id field per user request to link leagues with authenticated Supabase users */
+  userId?: string
 }
 
 export interface LeagueMessage {
@@ -439,6 +441,8 @@ function leagueToSupabaseRow(league: League) {
     maximum_bid: league.maximumBid,
     squads: league.squads ? JSON.stringify(league.squads) : null,
     auction_participants: league.auctionParticipants ? JSON.stringify(league.auctionParticipants) : null,
+    /* Added user_id field per user request to link leagues with authenticated users */
+    user_id: league.userId || null,
   }
 }
 
@@ -476,6 +480,8 @@ function supabaseRowToLeague(row: Record<string, unknown>): League {
     squads: row.squads ? (typeof row.squads === 'string' ? JSON.parse(row.squads) : row.squads) : undefined,
     auctionParticipants: row.auction_participants ? (typeof row.auction_participants === 'string' ? JSON.parse(row.auction_participants) : row.auction_participants) : undefined,
     nextAction: "View League",
+    /* Added user_id field per user request to link leagues with authenticated users */
+    userId: row.user_id as string | undefined,
   }
 }
 
@@ -1139,6 +1145,10 @@ export const leagueStore = create<LeagueStore>((set, get) => ({
     set({ isLoading: true })
     try {
       const supabase = createClient()
+      /* Changed: Get current authenticated user to fetch their leagues per user request */
+      const { data: { user: authUser } } = await supabase.auth.getUser()
+      
+      /* Changed: Fetch all leagues - will filter by user_id or joined_members on client per user request */
       const { data, error } = await supabase
         .from("leagues")
         .select("*")
@@ -1153,14 +1163,22 @@ export const leagueStore = create<LeagueStore>((set, get) => ({
       if (data && data.length > 0) {
         /* Convert Supabase rows to League format and merge with mock data per user request */
         const supabaseLeagues = data.map(supabaseRowToLeague)
+        /* Changed: Filter leagues to only show user's own leagues (created or joined) per user request */
+        const userLeagues = authUser 
+          ? supabaseLeagues.filter(l => 
+              l.userId === authUser.id || 
+              l.joinedMembers.includes(authUser.id) ||
+              l.isPublic
+            )
+          : supabaseLeagues.filter(l => l.isPublic)
         /* Keep mock leagues that don't exist in Supabase, add Supabase leagues */
-        const supabaseLeagueIds = new Set(supabaseLeagues.map(l => l.id))
+        const supabaseLeagueIds = new Set(userLeagues.map(l => l.id))
         const mockOnlyLeagues = initialLeagues.filter(l => !supabaseLeagueIds.has(l.id))
-        set({ leagues: [...supabaseLeagues, ...mockOnlyLeagues], isLoading: false })
+        set({ leagues: [...userLeagues, ...mockOnlyLeagues], isLoading: false })
       } else {
         set({ isLoading: false })
       }
-    } catch (err) {
+    } catch {
       set({ isLoading: false })
     }
   },
@@ -1213,6 +1231,10 @@ export const leagueStore = create<LeagueStore>((set, get) => ({
       }
     }
 
+    /* Changed: Get authenticated user's UUID from Supabase Auth per user request to link leagues with user accounts */
+    const supabase = createClient()
+    const { data: { user: authUser } } = await supabase.auth.getUser()
+
     const newLeague: League = {
       ...restLeagueData,
       id: Math.random().toString(36).substring(2, 15),
@@ -1224,11 +1246,12 @@ export const leagueStore = create<LeagueStore>((set, get) => ({
       joinedMembers: [restLeagueData.createdBy],
       squads: squads.length > 0 ? squads : undefined,
       auctionParticipants: auctionParticipants,
+      /* Changed: Set userId from authenticated Supabase user per user request */
+      userId: authUser?.id,
     }
 
     /* Persist league to Supabase per user request to fix data loss on refresh */
     try {
-      const supabase = createClient()
       const rowData = leagueToSupabaseRow(newLeague)
       await supabase.from("leagues").insert(rowData)
       /* Silently fail if Supabase is not available - league still added to local state */
