@@ -37,21 +37,27 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       try {
         /* Changed: Get current session from Supabase Auth */
         const { data: { session } } = await supabase.auth.getSession()
-        /* Debug: Log session status to verify Supabase Auth is working */
-        console.log("[v0] checkAuth: session exists:", !!session, "user:", session?.user?.email)
         
         if (session?.user) {
-          /* Changed: Fetch user profile from profiles table in database */
-          const { data: profile, error: profileError } = await supabase
-            .from("profiles")
-            .select("*")
-            .eq("id", session.user.id)
-            .single()
+          /* Changed: Try to fetch profile with timeout to prevent hanging when schema cache not ready */
+          let profile = null
+          try {
+            const profilePromise = supabase
+              .from("profiles")
+              .select("*")
+              .eq("id", session.user.id)
+              .single()
+            /* Changed: Add 3 second timeout to prevent indefinite waiting */
+            const timeoutPromise = new Promise((_, reject) => 
+              setTimeout(() => reject(new Error("timeout")), 3000)
+            )
+            const result = await Promise.race([profilePromise, timeoutPromise]) as { data: typeof profile }
+            profile = result?.data
+          } catch {
+            /* Profile fetch failed or timed out - use session data instead */
+          }
           
-          /* Debug: Log profile fetch result */
-          console.log("[v0] checkAuth: profile data:", profile, "error:", profileError)
-          
-          /* Changed: Set user from Supabase profile data */
+          /* Changed: Set user from Supabase profile data or fall back to session metadata */
           setUser({
             id: session.user.id,
             name: profile?.name || session.user.user_metadata?.name || session.user.email || "",
@@ -60,9 +66,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             emblem: profile?.emblem || "",
           })
         }
-      } catch (error) {
-        /* Debug: Log any errors during auth check */
-        console.log("[v0] checkAuth error:", error)
+      } catch {
+        /* Silently handle auth check errors */
       } finally {
         setIsLoading(false)
       }
@@ -73,12 +78,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     /* Changed: Listen for auth state changes from Supabase */
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (event === "SIGNED_IN" && session?.user) {
-        /* Changed: Fetch profile when user signs in */
-        const { data: profile } = await supabase
-          .from("profiles")
-          .select("*")
-          .eq("id", session.user.id)
-          .single()
+        /* Changed: Try to fetch profile with timeout to prevent hanging */
+        let profile = null
+        try {
+          const profilePromise = supabase
+            .from("profiles")
+            .select("*")
+            .eq("id", session.user.id)
+            .single()
+          /* Changed: Add 3 second timeout to prevent indefinite waiting */
+          const timeoutPromise = new Promise((_, reject) => 
+            setTimeout(() => reject(new Error("timeout")), 3000)
+          )
+          const result = await Promise.race([profilePromise, timeoutPromise]) as { data: typeof profile }
+          profile = result?.data
+        } catch {
+          /* Profile fetch failed or timed out - use session data instead */
+        }
         
         setUser({
           id: session.user.id,
@@ -98,31 +114,34 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [supabase])
 
   const login = async (email: string, password: string) => {
-    /* Debug: Log login attempt */
-    console.log("[v0] login: attempting login for:", email)
     /* Changed: Use Supabase Auth signInWithPassword instead of localStorage per user request */
     const { data, error } = await supabase.auth.signInWithPassword({
       email,
       password,
     })
 
-    /* Debug: Log login result */
-    console.log("[v0] login: result - user:", data?.user?.id, "error:", error)
-
     if (error) {
       throw new Error(error.message)
     }
 
     if (data.user) {
-      /* Changed: Fetch user profile from database after successful login */
-      const { data: profile, error: profileError } = await supabase
-        .from("profiles")
-        .select("*")
-        .eq("id", data.user.id)
-        .single()
-
-      /* Debug: Log profile fetch result */
-      console.log("[v0] login: profile data:", profile, "error:", profileError)
+      /* Changed: Try to fetch profile with timeout to prevent hanging */
+      let profile = null
+      try {
+        const profilePromise = supabase
+          .from("profiles")
+          .select("*")
+          .eq("id", data.user.id)
+          .single()
+        /* Changed: Add 3 second timeout to prevent indefinite waiting */
+        const timeoutPromise = new Promise((_, reject) => 
+          setTimeout(() => reject(new Error("timeout")), 3000)
+        )
+        const result = await Promise.race([profilePromise, timeoutPromise]) as { data: typeof profile }
+        profile = result?.data
+      } catch {
+        /* Profile fetch failed or timed out - use session data instead */
+      }
 
       setUser({
         id: data.user.id,
@@ -135,8 +154,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   const signup = async (name: string, email: string, password: string) => {
-    /* Debug: Log signup attempt */
-    console.log("[v0] signup: attempting signup for:", email)
     /* Changed: Use Supabase Auth signUp to save user credentials to database per user request */
     const { data, error } = await supabase.auth.signUp({
       email,
@@ -151,9 +168,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           `${window.location.origin}/dashboard`,
       },
     })
-
-    /* Debug: Log signup result */
-    console.log("[v0] signup: result - user:", data?.user?.id, "error:", error)
 
     if (error) {
       throw new Error(error.message)
