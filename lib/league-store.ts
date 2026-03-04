@@ -1148,11 +1148,26 @@ export const leagueStore = create<LeagueStore>((set, get) => ({
       /* Changed: Get current authenticated user to fetch their leagues per user request */
       const { data: { user: authUser } } = await supabase.auth.getUser()
       
-      /* Changed: Fetch all leagues - will filter by user_id or joined_members on client per user request */
-      const { data, error } = await supabase
-        .from("leagues")
-        .select("*")
-        .order("created_at", { ascending: false })
+      /* Changed: Fetch leagues with timeout to prevent hanging when schema cache not ready */
+      let data = null
+      let error = null
+      try {
+        const leaguesPromise = supabase
+          .from("leagues")
+          .select("*")
+          .order("created_at", { ascending: false })
+        /* Changed: Add 3 second timeout to prevent indefinite waiting */
+        const timeoutPromise = new Promise((_, reject) => 
+          setTimeout(() => reject(new Error("timeout")), 3000)
+        )
+        const result = await Promise.race([leaguesPromise, timeoutPromise]) as { data: typeof data; error: typeof error }
+        data = result?.data
+        error = result?.error
+      } catch {
+        /* Leagues fetch timed out - use mock data instead */
+        set({ isLoading: false })
+        return
+      }
 
       if (error) {
         /* Silently fail and keep mock data if Supabase is not available */

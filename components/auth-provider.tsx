@@ -39,14 +39,25 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         const { data: { session } } = await supabase.auth.getSession()
         
         if (session?.user) {
-          /* Changed: Fetch user profile from profiles table in database */
-          const { data: profile } = await supabase
-            .from("profiles")
-            .select("*")
-            .eq("id", session.user.id)
-            .single()
+          /* Changed: Try to fetch profile with timeout to prevent hanging when schema cache not ready */
+          let profile = null
+          try {
+            const profilePromise = supabase
+              .from("profiles")
+              .select("*")
+              .eq("id", session.user.id)
+              .single()
+            /* Changed: Add 3 second timeout to prevent indefinite waiting */
+            const timeoutPromise = new Promise((_, reject) => 
+              setTimeout(() => reject(new Error("timeout")), 3000)
+            )
+            const result = await Promise.race([profilePromise, timeoutPromise]) as { data: typeof profile }
+            profile = result?.data
+          } catch {
+            /* Profile fetch failed or timed out - use session data instead */
+          }
           
-          /* Changed: Set user from Supabase profile data */
+          /* Changed: Set user from Supabase profile data or fall back to session metadata */
           setUser({
             id: session.user.id,
             name: profile?.name || session.user.user_metadata?.name || session.user.email || "",
@@ -67,12 +78,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     /* Changed: Listen for auth state changes from Supabase */
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (event === "SIGNED_IN" && session?.user) {
-        /* Changed: Fetch profile when user signs in */
-        const { data: profile } = await supabase
-          .from("profiles")
-          .select("*")
-          .eq("id", session.user.id)
-          .single()
+        /* Changed: Try to fetch profile with timeout to prevent hanging */
+        let profile = null
+        try {
+          const profilePromise = supabase
+            .from("profiles")
+            .select("*")
+            .eq("id", session.user.id)
+            .single()
+          /* Changed: Add 3 second timeout to prevent indefinite waiting */
+          const timeoutPromise = new Promise((_, reject) => 
+            setTimeout(() => reject(new Error("timeout")), 3000)
+          )
+          const result = await Promise.race([profilePromise, timeoutPromise]) as { data: typeof profile }
+          profile = result?.data
+        } catch {
+          /* Profile fetch failed or timed out - use session data instead */
+        }
         
         setUser({
           id: session.user.id,
@@ -103,12 +125,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
 
     if (data.user) {
-      /* Changed: Fetch user profile from database after successful login */
-      const { data: profile } = await supabase
-        .from("profiles")
-        .select("*")
-        .eq("id", data.user.id)
-        .single()
+      /* Changed: Try to fetch profile with timeout to prevent hanging */
+      let profile = null
+      try {
+        const profilePromise = supabase
+          .from("profiles")
+          .select("*")
+          .eq("id", data.user.id)
+          .single()
+        /* Changed: Add 3 second timeout to prevent indefinite waiting */
+        const timeoutPromise = new Promise((_, reject) => 
+          setTimeout(() => reject(new Error("timeout")), 3000)
+        )
+        const result = await Promise.race([profilePromise, timeoutPromise]) as { data: typeof profile }
+        profile = result?.data
+      } catch {
+        /* Profile fetch failed or timed out - use session data instead */
+      }
 
       setUser({
         id: data.user.id,
