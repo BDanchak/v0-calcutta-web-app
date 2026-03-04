@@ -1143,10 +1143,14 @@ export const leagueStore = create<LeagueStore>((set, get) => ({
   /* Added fetchLeagues to load leagues from Supabase on app init per user request to fix data loss on refresh */
   fetchLeagues: async () => {
     set({ isLoading: true })
+    /* Debug: Log fetchLeagues start */
+    console.log("[v0] fetchLeagues: starting to fetch leagues from Supabase")
     try {
       const supabase = createClient()
       /* Changed: Get current authenticated user to fetch their leagues per user request */
       const { data: { user: authUser } } = await supabase.auth.getUser()
+      /* Debug: Log auth user status */
+      console.log("[v0] fetchLeagues: authUser:", authUser?.id, authUser?.email)
       
       /* Changed: Fetch all leagues - will filter by user_id or joined_members on client per user request */
       const { data, error } = await supabase
@@ -1154,7 +1158,12 @@ export const leagueStore = create<LeagueStore>((set, get) => ({
         .select("*")
         .order("created_at", { ascending: false })
 
+      /* Debug: Log Supabase response */
+      console.log("[v0] fetchLeagues: data count:", data?.length, "error:", error)
+
       if (error) {
+        /* Debug: Log specific error */
+        console.log("[v0] fetchLeagues: error details:", error.message, error.code)
         /* Silently fail and keep mock data if Supabase is not available */
         set({ isLoading: false })
         return
@@ -1253,10 +1262,17 @@ export const leagueStore = create<LeagueStore>((set, get) => ({
     /* Persist league to Supabase per user request to fix data loss on refresh */
     try {
       const rowData = leagueToSupabaseRow(newLeague)
-      await supabase.from("leagues").insert(rowData)
-      /* Silently fail if Supabase is not available - league still added to local state */
-    } catch {
-      /* Silently fail - league still added to local state */
+      /* Debug: Log league data being inserted */
+      console.log("[v0] createLeague: inserting league to Supabase:", newLeague.id, newLeague.name)
+      const { error: insertError } = await supabase.from("leagues").insert(rowData)
+      /* Debug: Log insert result */
+      console.log("[v0] createLeague: insert result - error:", insertError)
+      if (insertError) {
+        console.log("[v0] createLeague: insert error details:", insertError.message, insertError.code)
+      }
+    } catch (err) {
+      /* Debug: Log any exceptions */
+      console.log("[v0] createLeague: exception:", err)
     }
 
     set((state) => ({
