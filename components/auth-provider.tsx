@@ -37,19 +37,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       try {
         /* Changed: Get current session from Supabase Auth */
         const { data: { session } } = await supabase.auth.getSession()
-        /* Debug: Log session status to verify Supabase Auth is working */
-        console.log("[v0] checkAuth: session exists:", !!session, "user:", session?.user?.email)
         
         if (session?.user) {
           /* Changed: Fetch user profile from profiles table in database */
-          const { data: profile, error: profileError } = await supabase
+          const { data: profile } = await supabase
             .from("profiles")
             .select("*")
             .eq("id", session.user.id)
             .single()
-          
-          /* Debug: Log profile fetch result */
-          console.log("[v0] checkAuth: profile data:", profile, "error:", profileError)
           
           /* Changed: Set user from Supabase profile data */
           setUser({
@@ -60,9 +55,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             emblem: profile?.emblem || "",
           })
         }
-      } catch (error) {
-        /* Debug: Log any errors during auth check */
-        console.log("[v0] checkAuth error:", error)
+      } catch {
+        /* Silently handle auth check errors */
       } finally {
         setIsLoading(false)
       }
@@ -98,16 +92,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [supabase])
 
   const login = async (email: string, password: string) => {
-    /* Debug: Log login attempt */
-    console.log("[v0] login: attempting login for:", email)
     /* Changed: Use Supabase Auth signInWithPassword instead of localStorage per user request */
     const { data, error } = await supabase.auth.signInWithPassword({
       email,
       password,
     })
-
-    /* Debug: Log login result */
-    console.log("[v0] login: result - user:", data?.user?.id, "error:", error)
 
     if (error) {
       throw new Error(error.message)
@@ -115,14 +104,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     if (data.user) {
       /* Changed: Fetch user profile from database after successful login */
-      const { data: profile, error: profileError } = await supabase
+      const { data: profile } = await supabase
         .from("profiles")
         .select("*")
         .eq("id", data.user.id)
         .single()
-
-      /* Debug: Log profile fetch result */
-      console.log("[v0] login: profile data:", profile, "error:", profileError)
 
       setUser({
         id: data.user.id,
@@ -135,8 +121,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   const signup = async (name: string, email: string, password: string) => {
-    /* Debug: Log signup attempt */
-    console.log("[v0] signup: attempting signup for:", email)
     /* Changed: Use Supabase Auth signUp to save user credentials to database per user request */
     const { data, error } = await supabase.auth.signUp({
       email,
@@ -151,9 +135,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           `${window.location.origin}/dashboard`,
       },
     })
-
-    /* Debug: Log signup result */
-    console.log("[v0] signup: result - user:", data?.user?.id, "error:", error)
 
     if (error) {
       throw new Error(error.message)
