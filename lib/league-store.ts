@@ -1151,6 +1151,8 @@ export const leagueStore = create<LeagueStore>((set, get) => ({
       /* Changed: Fetch leagues with timeout to prevent hanging when schema cache not ready */
       let data = null
       let error = null
+      /* Debug: Log fetchLeagues start */
+      console.log("[v0] fetchLeagues: starting, authUser:", authUser?.id)
       try {
         const leaguesPromise = supabase
           .from("leagues")
@@ -1163,13 +1165,19 @@ export const leagueStore = create<LeagueStore>((set, get) => ({
         const result = await Promise.race([leaguesPromise, timeoutPromise]) as { data: typeof data; error: typeof error }
         data = result?.data
         error = result?.error
-      } catch {
+        /* Debug: Log fetch result */
+        console.log("[v0] fetchLeagues: result - data count:", data?.length, "error:", error)
+      } catch (err) {
+        /* Debug: Log timeout or exception */
+        console.log("[v0] fetchLeagues: timeout or exception:", err)
         /* Leagues fetch timed out - use mock data instead */
         set({ isLoading: false })
         return
       }
 
       if (error) {
+        /* Debug: Log specific error */
+        console.log("[v0] fetchLeagues: Supabase error:", error.message, error.code)
         /* Silently fail and keep mock data if Supabase is not available */
         set({ isLoading: false })
         return
@@ -1268,9 +1276,14 @@ export const leagueStore = create<LeagueStore>((set, get) => ({
     /* Persist league to Supabase per user request to fix data loss on refresh */
     try {
       const rowData = leagueToSupabaseRow(newLeague)
-      await supabase.from("leagues").insert(rowData)
-    } catch {
-      /* Silently fail - league still added to local state */
+      /* Debug: Log the insert attempt to diagnose persistence issues */
+      console.log("[v0] createLeague: inserting to Supabase, rowData:", JSON.stringify(rowData).slice(0, 200))
+      const { error: insertError } = await supabase.from("leagues").insert(rowData)
+      /* Debug: Log the result of the insert */
+      console.log("[v0] createLeague: insert result - error:", insertError)
+    } catch (err) {
+      /* Debug: Log any exceptions */
+      console.log("[v0] createLeague: exception:", err)
     }
 
     set((state) => ({
