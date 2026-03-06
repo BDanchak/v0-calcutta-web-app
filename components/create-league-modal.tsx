@@ -57,6 +57,8 @@ export function CreateLeagueModal({ children, onLeagueCreated }: CreateLeagueMod
     "nfl-playoffs-2025": new Date("2025-01-11"),
     // Added Survivor 50 tournament date (premieres Feb 25, 2026) per user request
     "survivor-50": new Date("2026-02-25"),
+    // Added March Madness 2025 tournament date per user request
+    "march-madness-2025": new Date("2025-03-18"),
   }
 
   const getClosestUpcomingTournament = () => {
@@ -85,6 +87,13 @@ export function CreateLeagueModal({ children, onLeagueCreated }: CreateLeagueMod
       name: "NFL Playoffs 2025",
       description: "National Football League Playoffs",
       date: "January 11 - February 9, 2025",
+    },
+    // Added March Madness 2025 tournament with 64 teams per user request
+    {
+      id: "march-madness-2025",
+      name: "March Madness 2025",
+      description: "NCAA Division I Men's Basketball Tournament (64 Teams)",
+      date: "March 18 - April 7, 2025",
     },
     // Added Survivor Season 50 tournament with all 24 returning contestants per user request
     {

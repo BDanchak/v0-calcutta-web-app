@@ -247,6 +247,93 @@ const getTournamentData = (tournamentId: string) => {
         rounds: ["First Round", "Semifinals", "Championship"],
       }
 
+    /* Added 2025 March Madness tournament with all 64 teams, seeds, regions, and game results per user request */
+    case "March Madness 2025":
+    case "march-madness-2025":
+      return {
+        name: "March Madness 2025",
+        /* Tournament completed - Florida Gators won the 2025 NCAA Championship defeating Houston 65-63 */
+        isCompleted: true,
+        champion: "Florida Gators",
+        runnerUp: "Houston Cougars",
+        championshipScore: "65-63",
+        finalFour: ["Florida Gators", "Houston Cougars", "Auburn Tigers", "Duke Blue Devils"],
+        teams: [
+          /* East Region - Duke was the 1 seed, made Final Four */
+          { id: 1, name: "Duke Blue Devils", seed: 1, region: "East", eliminated: true },
+          { id: 2, name: "Alabama Crimson Tide", seed: 2, region: "East", eliminated: true },
+          { id: 3, name: "Wisconsin Badgers", seed: 3, region: "East", eliminated: true },
+          { id: 4, name: "Arizona Wildcats", seed: 4, region: "East", eliminated: true },
+          { id: 5, name: "Oregon Ducks", seed: 5, region: "East", eliminated: true },
+          { id: 6, name: "BYU Cougars", seed: 6, region: "East", eliminated: true },
+          { id: 7, name: "St. Mary's Gaels", seed: 7, region: "East", eliminated: true },
+          { id: 8, name: "Mississippi State Bulldogs", seed: 8, region: "East", eliminated: true },
+          { id: 9, name: "Baylor Bears", seed: 9, region: "East", eliminated: true },
+          { id: 10, name: "Vanderbilt Commodores", seed: 10, region: "East", eliminated: true },
+          { id: 11, name: "VCU Rams", seed: 11, region: "East", eliminated: true },
+          { id: 12, name: "Liberty Flames", seed: 12, region: "East", eliminated: true },
+          { id: 13, name: "Akron Zips", seed: 13, region: "East", eliminated: true },
+          { id: 14, name: "Montana Grizzlies", seed: 14, region: "East", eliminated: true },
+          { id: 15, name: "Robert Morris Colonials", seed: 15, region: "East", eliminated: true },
+          { id: 16, name: "American Eagles", seed: 16, region: "East", eliminated: true },
+
+          /* West Region - Florida was the 1 seed and won the championship */
+          { id: 17, name: "Florida Gators", seed: 1, region: "West", eliminated: false },
+          { id: 18, name: "St. John's Red Storm", seed: 2, region: "West", eliminated: true },
+          { id: 19, name: "Texas Tech Red Raiders", seed: 3, region: "West", eliminated: true },
+          { id: 20, name: "Maryland Terrapins", seed: 4, region: "West", eliminated: true },
+          { id: 21, name: "Memphis Tigers", seed: 5, region: "West", eliminated: true },
+          { id: 22, name: "Missouri Tigers", seed: 6, region: "West", eliminated: true },
+          { id: 23, name: "Kansas Jayhawks", seed: 7, region: "West", eliminated: true },
+          { id: 24, name: "UConn Huskies", seed: 8, region: "West", eliminated: true },
+          { id: 25, name: "Oklahoma Sooners", seed: 9, region: "West", eliminated: true },
+          { id: 26, name: "Arkansas Razorbacks", seed: 10, region: "West", eliminated: true },
+          { id: 27, name: "Drake Bulldogs", seed: 11, region: "West", eliminated: true },
+          { id: 28, name: "UC San Diego Tritons", seed: 12, region: "West", eliminated: true },
+          { id: 29, name: "Yale Bulldogs", seed: 13, region: "West", eliminated: true },
+          { id: 30, name: "Lipscomb Bisons", seed: 14, region: "West", eliminated: true },
+          { id: 31, name: "Omaha Mavericks", seed: 15, region: "West", eliminated: true },
+          { id: 32, name: "Norfolk State Spartans", seed: 16, region: "West", eliminated: true },
+
+          /* South Region - Auburn was the 1 seed, made Final Four */
+          { id: 33, name: "Auburn Tigers", seed: 1, region: "South", eliminated: true },
+          { id: 34, name: "Michigan State Spartans", seed: 2, region: "South", eliminated: true },
+          { id: 35, name: "Iowa State Cyclones", seed: 3, region: "South", eliminated: true },
+          { id: 36, name: "Texas A&M Aggies", seed: 4, region: "South", eliminated: true },
+          { id: 37, name: "Michigan Wolverines", seed: 5, region: "South", eliminated: true },
+          { id: 38, name: "Ole Miss Rebels", seed: 6, region: "South", eliminated: true },
+          { id: 39, name: "Marquette Golden Eagles", seed: 7, region: "South", eliminated: true },
+          { id: 40, name: "Louisville Cardinals", seed: 8, region: "South", eliminated: true },
+          { id: 41, name: "Creighton Bluejays", seed: 9, region: "South", eliminated: true },
+          { id: 42, name: "New Mexico Lobos", seed: 10, region: "South", eliminated: true },
+          { id: 43, name: "San Diego State Aztecs", seed: 11, region: "South", eliminated: true },
+          { id: 44, name: "UC Irvine Anteaters", seed: 12, region: "South", eliminated: true },
+          { id: 45, name: "High Point Panthers", seed: 13, region: "South", eliminated: true },
+          { id: 46, name: "Troy Trojans", seed: 14, region: "South", eliminated: true },
+          { id: 47, name: "Bryant Bulldogs", seed: 15, region: "South", eliminated: true },
+          { id: 48, name: "SIU Edwardsville Cougars", seed: 16, region: "South", eliminated: true },
+
+          /* Midwest Region - Houston was the 1 seed, made Finals */
+          { id: 49, name: "Houston Cougars", seed: 1, region: "Midwest", eliminated: true },
+          { id: 50, name: "Tennessee Volunteers", seed: 2, region: "Midwest", eliminated: true },
+          { id: 51, name: "Kentucky Wildcats", seed: 3, region: "Midwest", eliminated: true },
+          { id: 52, name: "Purdue Boilermakers", seed: 4, region: "Midwest", eliminated: true },
+          { id: 53, name: "Clemson Tigers", seed: 5, region: "Midwest", eliminated: true },
+          { id: 54, name: "Illinois Fighting Illini", seed: 6, region: "Midwest", eliminated: true },
+          { id: 55, name: "UCLA Bruins", seed: 7, region: "Midwest", eliminated: true },
+          { id: 56, name: "Gonzaga Bulldogs", seed: 8, region: "Midwest", eliminated: true },
+          { id: 57, name: "Georgia Bulldogs", seed: 9, region: "Midwest", eliminated: true },
+          { id: 58, name: "Texas Longhorns", seed: 10, region: "Midwest", eliminated: true },
+          { id: 59, name: "NC State Wolfpack", seed: 11, region: "Midwest", eliminated: true },
+          { id: 60, name: "McNeese Cowboys", seed: 12, region: "Midwest", eliminated: true },
+          { id: 61, name: "Wofford Terriers", seed: 13, region: "Midwest", eliminated: true },
+          { id: 62, name: "Grambling State Tigers", seed: 14, region: "Midwest", eliminated: true },
+          { id: 63, name: "Grand Canyon Antelopes", seed: 15, region: "Midwest", eliminated: true },
+          { id: 64, name: "SIUE Cougars", seed: 16, region: "Midwest", eliminated: true },
+        ],
+        rounds: ["First Round", "Second Round", "Sweet 16", "Elite 8", "Final Four", "Championship"],
+      }
+
     /* Added Survivor Season 50 case with all 24 returning contestants per user request */
     /* Updated rounds to episode-based elimination format that advances left to right per user request */
     case "Survivor 50":
@@ -1083,6 +1170,199 @@ export function TournamentBracket({ tournamentId, leagueSquads }: TournamentBrac
         round: "NBA Finals",
         completed: true,
         pointsAwarded: 8,
+      })
+
+    /* Added 2025 March Madness bracket with real game results - Florida won championship per user request */
+    } else if (tournamentData.name.includes("March Madness") && tournamentData.name.includes("2025")) {
+      // 2025 NCAA Tournament - Florida Gators won championship defeating Houston 65-63
+      const florida = teams.find(t => t.name === "Florida Gators") || null
+      const houston = teams.find(t => t.name === "Houston Cougars") || null
+      const auburn = teams.find(t => t.name === "Auburn Tigers") || null
+      const duke = teams.find(t => t.name === "Duke Blue Devils") || null
+      const alabama = teams.find(t => t.name === "Alabama Crimson Tide") || null
+      const tennessee = teams.find(t => t.name === "Tennessee Volunteers") || null
+      const michigan = teams.find(t => t.name === "Michigan Wolverines") || null
+      const texasAM = teams.find(t => t.name === "Texas A&M Aggies") || null
+      const michiganState = teams.find(t => t.name === "Michigan State Spartans") || null
+      const stJohns = teams.find(t => t.name === "St. John's Red Storm") || null
+      const maryland = teams.find(t => t.name === "Maryland Terrapins") || null
+      const clemson = teams.find(t => t.name === "Clemson Tigers") || null
+      const kansas = teams.find(t => t.name === "Kansas Jayhawks") || null
+      const marquette = teams.find(t => t.name === "Marquette Golden Eagles") || null
+      const gonzaga = teams.find(t => t.name === "Gonzaga Bulldogs") || null
+      const kentucky = teams.find(t => t.name === "Kentucky Wildcats") || null
+
+      // Final Four - Florida, Houston, Auburn, Duke per user request
+      games.push({
+        id: "r5-ff-1",
+        team1: florida,
+        team2: duke,
+        winner: florida ? { ...florida, score: 72 } : undefined,
+        team1Score: 72,
+        team2Score: 67,
+        round: "Final Four",
+        completed: true,
+        pointsAwarded: 8,
+      })
+      games.push({
+        id: "r5-ff-2",
+        team1: houston,
+        team2: auburn,
+        winner: houston ? { ...houston, score: 68 } : undefined,
+        team1Score: 68,
+        team2Score: 62,
+        round: "Final Four",
+        completed: true,
+        pointsAwarded: 8,
+      })
+
+      // Championship - Florida defeats Houston 65-63 per user request
+      games.push({
+        id: "r6-champ",
+        team1: florida,
+        team2: houston,
+        winner: florida ? { ...florida, score: 65 } : undefined,
+        team1Score: 65,
+        team2Score: 63,
+        round: "Championship",
+        completed: true,
+        pointsAwarded: 16,
+      })
+
+      // Elite 8 games per user request
+      games.push({
+        id: "r4-e-1",
+        team1: duke,
+        team2: alabama,
+        winner: duke ? { ...duke, score: 78 } : undefined,
+        team1Score: 78,
+        team2Score: 72,
+        round: "Elite 8",
+        completed: true,
+        pointsAwarded: 6,
+      })
+      games.push({
+        id: "r4-w-1",
+        team1: florida,
+        team2: stJohns,
+        winner: florida ? { ...florida, score: 85 } : undefined,
+        team1Score: 85,
+        team2Score: 74,
+        round: "Elite 8",
+        completed: true,
+        pointsAwarded: 6,
+      })
+      games.push({
+        id: "r4-s-1",
+        team1: auburn,
+        team2: michiganState,
+        winner: auburn ? { ...auburn, score: 71 } : undefined,
+        team1Score: 71,
+        team2Score: 68,
+        round: "Elite 8",
+        completed: true,
+        pointsAwarded: 6,
+      })
+      games.push({
+        id: "r4-m-1",
+        team1: houston,
+        team2: tennessee,
+        winner: houston ? { ...houston, score: 66 } : undefined,
+        team1Score: 66,
+        team2Score: 61,
+        round: "Elite 8",
+        completed: true,
+        pointsAwarded: 6,
+      })
+
+      // Sweet 16 games per user request
+      games.push({
+        id: "r3-e-1",
+        team1: duke,
+        team2: teams.find(t => t.name === "Arizona Wildcats") || null,
+        winner: duke ? { ...duke, score: 82 } : undefined,
+        team1Score: 82,
+        team2Score: 75,
+        round: "Sweet 16",
+        completed: true,
+        pointsAwarded: 4,
+      })
+      games.push({
+        id: "r3-e-2",
+        team1: alabama,
+        team2: teams.find(t => t.name === "Wisconsin Badgers") || null,
+        winner: alabama ? { ...alabama, score: 79 } : undefined,
+        team1Score: 79,
+        team2Score: 70,
+        round: "Sweet 16",
+        completed: true,
+        pointsAwarded: 4,
+      })
+      games.push({
+        id: "r3-w-1",
+        team1: florida,
+        team2: maryland,
+        winner: florida ? { ...florida, score: 87 } : undefined,
+        team1Score: 87,
+        team2Score: 78,
+        round: "Sweet 16",
+        completed: true,
+        pointsAwarded: 4,
+      })
+      games.push({
+        id: "r3-w-2",
+        team1: stJohns,
+        team2: kansas,
+        winner: stJohns ? { ...stJohns, score: 75 } : undefined,
+        team1Score: 75,
+        team2Score: 68,
+        round: "Sweet 16",
+        completed: true,
+        pointsAwarded: 4,
+      })
+      games.push({
+        id: "r3-s-1",
+        team1: auburn,
+        team2: texasAM,
+        winner: auburn ? { ...auburn, score: 80 } : undefined,
+        team1Score: 80,
+        team2Score: 69,
+        round: "Sweet 16",
+        completed: true,
+        pointsAwarded: 4,
+      })
+      games.push({
+        id: "r3-s-2",
+        team1: michiganState,
+        team2: michigan,
+        winner: michiganState ? { ...michiganState, score: 77 } : undefined,
+        team1Score: 77,
+        team2Score: 72,
+        round: "Sweet 16",
+        completed: true,
+        pointsAwarded: 4,
+      })
+      games.push({
+        id: "r3-m-1",
+        team1: houston,
+        team2: kentucky,
+        winner: houston ? { ...houston, score: 69 } : undefined,
+        team1Score: 69,
+        team2Score: 64,
+        round: "Sweet 16",
+        completed: true,
+        pointsAwarded: 4,
+      })
+      games.push({
+        id: "r3-m-2",
+        team1: tennessee,
+        team2: clemson,
+        winner: tennessee ? { ...tennessee, score: 72 } : undefined,
+        team1Score: 72,
+        team2Score: 66,
+        round: "Sweet 16",
+        completed: true,
+        pointsAwarded: 4,
       })
 
     } else if (tournamentData.name.includes("March Madness")) {
