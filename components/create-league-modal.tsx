@@ -432,10 +432,8 @@ export function CreateLeagueModal({ children, onLeagueCreated }: CreateLeagueMod
                   <Select 
                     value={[4, 6, 8, 10, 12, 16, 20, 24, 32].includes(Number(formData.maxMembers)) ? formData.maxMembers : "custom"} 
                     onValueChange={(value) => {
-                      /* Changed: Only update if not selecting custom - custom uses the input field */
-                      if (value !== "custom") {
-                        handleInputChange("maxMembers", value)
-                      }
+                      /* Changed: Set maxMembers to "custom" when Custom is selected to trigger input display per user request */
+                      handleInputChange("maxMembers", value)
                     }}
                   >
                     <SelectTrigger className="flex-1">
@@ -451,8 +449,8 @@ export function CreateLeagueModal({ children, onLeagueCreated }: CreateLeagueMod
                       <SelectItem value="custom">Custom</SelectItem>
                     </SelectContent>
                   </Select>
-                  {/* Changed: Show input field when custom is selected or value is not in presets per user request */}
-                  {(![4, 6, 8, 10, 12, 16, 20, 24, 32].includes(Number(formData.maxMembers)) || formData.maxMembers === "custom") && (
+                  {/* Changed: Show input field when formData.maxMembers is "custom" or not in preset list per user request */}
+                  {(formData.maxMembers === "custom" || ![4, 6, 8, 10, 12, 16, 20, 24, 32, "4", "6", "8", "10", "12", "16", "20", "24", "32"].includes(formData.maxMembers)) && (
                     <Input
                       id="maxMembersCustom"
                       type="number"
