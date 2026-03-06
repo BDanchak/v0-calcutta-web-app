@@ -459,6 +459,24 @@ export default function LeaguePage() {
   const isAuctionCompleted = league?.auctionResults && Object.keys(league.auctionResults).length > 0
   const squadsToShow = getAuctionResults()
 
+  /* Changed: Calculate Total Pot from auction results per user request */
+  /* Total Pot starts at $0 and updates to sum of all sold team payments after auction completes */
+  const calculateTotalPot = () => {
+    if (!league) return 0
+    /* Before auction or no results - show $0 per user request */
+    if (!isAuctionCompleted) return 0
+    /* After auction - sum all payments for sold teams per user request */
+    const auctionResults = league.auctionResults as Record<string, any[]>
+    let totalPot = 0
+    Object.values(auctionResults).forEach((memberTeams) => {
+      memberTeams.forEach((team) => {
+        totalPot += team.price || 0
+      })
+    })
+    return totalPot
+  }
+  const totalPot = calculateTotalPot()
+
   const handleSettingsChange = (field: string, value: string | boolean) => {
     setSettingsData((prev) => ({
       ...prev,
@@ -1007,8 +1025,9 @@ export default function LeaguePage() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-muted-foreground">Total Pot</p>
+                  {/* Changed: Show $0 before auction, sum of sold team payments after auction per user request */}
                   <p className="text-2xl font-bold text-foreground">
-                    ${league.totalPot || league.members * league.entryFee}
+                    ${totalPot}
                   </p>
                 </div>
                 <DollarSign className="h-8 w-8 text-green-500" />
