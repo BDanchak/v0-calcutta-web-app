@@ -10,6 +10,8 @@ import { JoinLeagueModal } from "@/components/join-league-modal"
 import { AuthModal } from "@/components/auth-modal"
 import { useAuth } from "@/components/auth-provider"
 import { leagueStore, type League } from "@/lib/league-store"
+/* Changed: Import isTournamentCompleted to filter leagues based on tournament dates per user request */
+import { isTournamentCompleted } from "@/lib/tournament-dates"
 import { Trophy, Users, DollarSign, Target, Crown, Plus, Search } from "lucide-react"
 import Link from "next/link"
 import { useToast } from "@/hooks/use-toast"
@@ -195,8 +197,11 @@ export default function DashboardPage() {
     return `${Math.floor(diffInMinutes / 1440)}d ago`
   }
 
-  const activeLeagues = userLeagues.filter((league) => league.status === "active" || league.status === "upcoming")
-  const completedLeagues = userLeagues.filter((league) => league.status === "completed")
+  /* Changed: Filter leagues based on tournament dates instead of status per user request */
+  /* Active Leagues: current date is before or during tournament dates */
+  /* League History: current date is after tournament dates */
+  const activeLeagues = userLeagues.filter((league) => !isTournamentCompleted(league.tournamentName))
+  const completedLeagues = userLeagues.filter((league) => isTournamentCompleted(league.tournamentName))
 
   if (isLoading) {
     return (
