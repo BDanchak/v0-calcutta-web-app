@@ -427,18 +427,42 @@ export function CreateLeagueModal({ children, onLeagueCreated }: CreateLeagueMod
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="maxMembers">Max Members</Label>
-                <Select value={formData.maxMembers} onValueChange={(value) => handleInputChange("maxMembers", value)}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {[4, 6, 8, 10, 12, 16, 20, 24, 32].map((num) => (
-                      <SelectItem key={num} value={num.toString()}>
-                        {num} members
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                {/* Changed: Added custom input option alongside preset values per user request */}
+                <div className="flex gap-2">
+                  <Select 
+                    value={[4, 6, 8, 10, 12, 16, 20, 24, 32].includes(Number(formData.maxMembers)) ? formData.maxMembers : "custom"} 
+                    onValueChange={(value) => {
+                      /* Changed: Set maxMembers to "custom" when Custom is selected to trigger input display per user request */
+                      handleInputChange("maxMembers", value)
+                    }}
+                  >
+                    <SelectTrigger className="flex-1">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {[4, 6, 8, 10, 12, 16, 20, 24, 32].map((num) => (
+                        <SelectItem key={num} value={num.toString()}>
+                          {num} members
+                        </SelectItem>
+                      ))}
+                      {/* Changed: Added Custom option to allow user-entered values per user request */}
+                      <SelectItem value="custom">Custom</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  {/* Changed: Show input field when formData.maxMembers is "custom" or not in preset list per user request */}
+                  {(formData.maxMembers === "custom" || ![4, 6, 8, 10, 12, 16, 20, 24, 32, "4", "6", "8", "10", "12", "16", "20", "24", "32"].includes(formData.maxMembers)) && (
+                    <Input
+                      id="maxMembersCustom"
+                      type="number"
+                      min="2"
+                      max="100"
+                      placeholder="Enter #"
+                      className="w-24"
+                      value={formData.maxMembers === "custom" ? "" : formData.maxMembers}
+                      onChange={(e) => handleInputChange("maxMembers", e.target.value)}
+                    />
+                  )}
+                </div>
               </div>
               <div className="space-y-2">
                 <Label htmlFor="entryFee">Entry Fee ($)</Label>
