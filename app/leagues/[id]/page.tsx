@@ -807,22 +807,34 @@ export default function LeaguePage() {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
-                  <Label htmlFor="settings-auctionDate">Auction Date</Label>
+                  {/* Changed: Added label styling when auction completed to show locked state per user request */}
+                  <Label htmlFor="settings-auctionDate" className={isAuctionCompleted ? "text-muted-foreground" : ""}>
+                    Auction Date {isAuctionCompleted && "(Locked)"}
+                  </Label>
+                  {/* Changed: Disable and grey out Auction Date when auction completes per user request */}
                   <Input
                     id="settings-auctionDate"
                     type="date"
                     value={settingsData.auctionDate}
                     onChange={(e) => handleSettingsChange("auctionDate", e.target.value)}
                     min={new Date().toISOString().split("T")[0]}
+                    disabled={isAuctionCompleted}
+                    className={isAuctionCompleted ? "bg-muted text-muted-foreground cursor-not-allowed" : ""}
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="settings-auctionTime">Auction Time</Label>
+                  {/* Changed: Added label styling when auction completed to show locked state per user request */}
+                  <Label htmlFor="settings-auctionTime" className={isAuctionCompleted ? "text-muted-foreground" : ""}>
+                    Auction Time {isAuctionCompleted && "(Locked)"}
+                  </Label>
+                  {/* Changed: Disable and grey out Auction Time when auction completes per user request */}
                   <Input
                     id="settings-auctionTime"
                     type="time"
                     value={settingsData.auctionTime}
                     onChange={(e) => handleSettingsChange("auctionTime", e.target.value)}
+                    disabled={isAuctionCompleted}
+                    className={isAuctionCompleted ? "bg-muted text-muted-foreground cursor-not-allowed" : ""}
                   />
                 </div>
               </div>
