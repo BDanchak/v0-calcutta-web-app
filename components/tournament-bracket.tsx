@@ -1377,36 +1377,77 @@ export function TournamentBracket({ tournamentId, leagueSquads }: TournamentBrac
   /* Check if this is Survivor 50 to use elimination-style rendering per user request */
   const isSurvivor = "isSurvivor" in tournamentData && tournamentData.isSurvivor
 
-  /* Survivor elimination data: tracks which contestants remain per episode per user request */
-  /* Since season hasn't started, all 24 contestants are still in Episode 1 */
-  const survivorEliminationData: Record<string, number[]> = {}
-  if (isSurvivor) {
-    const allContestantIds = tournamentData.teams.map(t => t.id)
-    // Episode 1: all contestants still in the game (season hasn't aired yet)
-    rounds.forEach((round, idx) => {
-      if (idx === 0) {
-        survivorEliminationData[round] = allContestantIds
-      } else {
-        // Future episodes: empty until results come in
-        survivorEliminationData[round] = []
+  /* Changed: Episode elimination data - tracks who was voted out each episode per user request */
+  /* Key = episode name, Value = contestant ID who was eliminated that episode (0 = no one yet) */
+  const episodeEliminations: Record<string, number> = {
+    "Episode 1": 0,   // No elimination yet - season hasn't aired
+    "Episode 2": 0,
+    "Episode 3": 0,
+    "Episode 4": 0,
+    "Episode 5": 0,
+    "Episode 6": 0,
+    "Episode 7": 0,
+    "Episode 8": 0,
+    "Episode 9": 0,
+    "Episode 10": 0,
+    "Episode 11": 0,
+    "Episode 12": 0,
+    "Episode 13": 0,
+    "Finale": 0,
+  }
+
+  /* Changed: Calculate which contestants remain after each episode per user request */
+  /* Builds cumulative elimination list so each column shows remaining + eliminated status */
+  const getEpisodeData = (episodeIndex: number) => {
+    if (!isSurvivor) return { remaining: [], eliminated: [], votedOutThisEpisode: 0 }
+    
+    const allIds = tournamentData.teams.map(t => t.id)
+    const eliminatedSoFar: number[] = []
+    let votedOutThisEpisode = 0
+    
+    // Build list of all eliminated contestants up to this episode
+    for (let i = 0; i <= episodeIndex; i++) {
+      const roundName = rounds[i]
+      const eliminatedId = episodeEliminations[roundName]
+      if (eliminatedId > 0) {
+        eliminatedSoFar.push(eliminatedId)
+        if (i === episodeIndex) {
+          votedOutThisEpisode = eliminatedId
+        }
       }
-    })
+    }
+    
+    const remaining = allIds.filter(id => !eliminatedSoFar.includes(id))
+    return { remaining, eliminated: eliminatedSoFar, votedOutThisEpisode }
+  }
+
+  /* Changed: Find current episode (first one without elimination result) per user request */
+  const getCurrentEpisodeIndex = () => {
+    for (let i = 0; i < rounds.length; i++) {
+      if (episodeEliminations[rounds[i]] === 0) return i
+    }
+    return rounds.length - 1 // All episodes complete
   }
 
   /* Survivor-specific bracket render: scrollable left-to-right elimination columns per user request */
   if (isSurvivor) {
-    const eliminatedCount = 0 // No one eliminated yet since season hasn't started
-    const remainingCount = tournamentData.teams.length
+    const currentEpisodeIndex = getCurrentEpisodeIndex()
+    const { remaining: currentRemaining, eliminated: currentEliminated } = getEpisodeData(currentEpisodeIndex)
+    const eliminatedCount = currentEliminated.length
+    const remainingCount = tournamentData.teams.length - eliminatedCount
+    const currentEpisodeName = rounds[currentEpisodeIndex]
 
     return (
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center justify-between">
             <span>{tournamentData.name} - Live Elimination Bracket</span>
-            <Badge className="bg-primary text-primary-foreground">Episode 1</Badge>
+            {/* Changed: Show current episode dynamically per user request */}
+            <Badge className="bg-primary text-primary-foreground">{currentEpisodeName}</Badge>
           </CardTitle>
           <CardDescription>
-            Scroll left and right to follow contestant eliminations across each episode through the finale
+            {/* Changed: Updated description to explain green/red coloring per user request */}
+            Green = Still in game | Red = Voted out. Scroll to follow eliminations each episode.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -1414,7 +1455,7 @@ export function TournamentBracket({ tournamentId, leagueSquads }: TournamentBrac
             {/* Survivor Progress Summary */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3 p-3 bg-muted/30 rounded-lg">
               <div className="text-center">
-                <div className="text-2xl font-bold text-primary">{remainingCount}</div>
+                <div className="text-2xl font-bold text-green-600">{remainingCount}</div>
                 <div className="text-sm text-muted-foreground">Contestants Remaining</div>
               </div>
               <div className="text-center">
@@ -1422,7 +1463,7 @@ export function TournamentBracket({ tournamentId, leagueSquads }: TournamentBrac
                 <div className="text-sm text-muted-foreground">Total Contestants</div>
               </div>
               <div className="text-center">
-                <div className="text-2xl font-bold text-muted-foreground">{eliminatedCount}</div>
+                <div className="text-2xl font-bold text-red-600">{eliminatedCount}</div>
                 <div className="text-sm text-muted-foreground">Eliminated</div>
               </div>
               <div className="text-center">
@@ -1435,58 +1476,87 @@ export function TournamentBracket({ tournamentId, leagueSquads }: TournamentBrac
             <div className="overflow-x-auto pb-4" style={{ scrollbarWidth: "thin" }}>
               <div className="min-w-max flex gap-3">
                 {rounds.map((round, roundIndex) => {
-                  const contestantIds = survivorEliminationData[round] || []
-                  const contestants = contestantIds
-                    .map(id => tournamentData.teams.find(t => t.id === id))
-                    .filter(Boolean) as BracketTeam[]
-                  const isCurrent = roundIndex === 0 // Episode 1 is current since season hasn't started
-                  const isFuture = roundIndex > 0
+                  /* Changed: Get episode-specific data showing survivors (green) and eliminated (red) per user request */
+                  const { remaining, eliminated, votedOutThisEpisode } = getEpisodeData(roundIndex)
+                  const hasAired = roundIndex <= currentEpisodeIndex && (roundIndex < currentEpisodeIndex || episodeEliminations[round] > 0)
+                  const isCurrent = roundIndex === currentEpisodeIndex
+                  const isFuture = roundIndex > currentEpisodeIndex
+                  
+                  /* Changed: Show all contestants with their status for aired episodes per user request */
+                  const allContestants = hasAired || isCurrent
+                    ? tournamentData.teams.map(t => ({
+                        ...t,
+                        /* Changed: Mark as eliminated if voted out by this episode per user request */
+                        isEliminated: eliminated.includes(t.id),
+                        /* Changed: Mark if voted out specifically this episode (shows red highlight) per user request */
+                        votedOutThisEpisode: votedOutThisEpisode === t.id
+                      }))
+                    : []
 
                   return (
                     <div key={round} className="flex-shrink-0" style={{ width: "220px" }}>
                       {/* Episode header */}
-                      <div className={`sticky top-0 z-10 bg-background pb-2 ${isCurrent ? "" : ""}`}>
+                      <div className={`sticky top-0 z-10 bg-background pb-2`}>
                         <h3 className={`font-bold text-center text-sm pb-1 border-b-2 ${
                           isCurrent
                             ? "text-primary border-primary"
                             : isFuture
                               ? "text-muted-foreground border-muted"
-                              : "text-foreground border-primary/40"
+                              : "text-foreground border-green-500/40"
                         }`}>
                           {round}
                         </h3>
                         <div className="text-center text-xs text-muted-foreground mt-1">
-                          {contestants.length > 0
-                            ? `${contestants.length} contestant${contestants.length !== 1 ? "s" : ""}`
+                          {/* Changed: Show remaining count for aired episodes per user request */}
+                          {hasAired || isCurrent
+                            ? `${remaining.length} remaining`
                             : "Awaiting results"}
                         </div>
                       </div>
 
                       {/* Contestant list for this episode */}
                       <div className="space-y-1 mt-2">
-                        {contestants.length > 0 ? (
-                          contestants.map((contestant) => (
+                        {(hasAired || isCurrent) && allContestants.length > 0 ? (
+                          /* Changed: Sort to show remaining contestants first, then eliminated per user request */
+                          [...allContestants]
+                            .sort((a, b) => {
+                              if (a.isEliminated === b.isEliminated) return a.id - b.id
+                              return a.isEliminated ? 1 : -1
+                            })
+                            .map((contestant) => (
                             <div
                               key={contestant.id}
                               className={`flex items-center gap-2 p-2 rounded border transition-all ${
-                                isCurrent
-                                  ? "bg-primary/10 border-primary/30 shadow-sm"
-                                  : "bg-card border-border"
+                                /* Changed: Green background for survivors, red for eliminated per user request */
+                                contestant.votedOutThisEpisode
+                                  ? "bg-red-500/20 border-red-500/50 shadow-sm"
+                                  : contestant.isEliminated
+                                    ? "bg-red-500/10 border-red-500/30 opacity-60"
+                                    : "bg-green-500/10 border-green-500/30"
                               }`}
                             >
                               <div className={`flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${
-                                contestant.region === "Old School"
-                                  ? "bg-amber-500/20 text-amber-700"
-                                  : "bg-sky-500/20 text-sky-700"
+                                /* Changed: Circle color based on elimination status per user request */
+                                contestant.isEliminated
+                                  ? "bg-red-500/30 text-red-700"
+                                  : "bg-green-500/30 text-green-700"
                               }`}>
                                 {contestant.id}
                               </div>
                               <div className="flex-1 min-w-0">
-                                <div className="text-xs font-semibold truncate text-foreground">
+                                <div className={`text-xs font-semibold truncate ${
+                                  /* Changed: Text color based on status per user request */
+                                  contestant.isEliminated ? "text-red-700 line-through" : "text-green-700"
+                                }`}>
                                   {contestant.name}
                                 </div>
                                 <div className="text-[10px] text-muted-foreground">
-                                  {contestant.region}
+                                  {/* Changed: Show "VOTED OUT" label for eliminated contestants per user request */}
+                                  {contestant.votedOutThisEpisode 
+                                    ? "VOTED OUT" 
+                                    : contestant.isEliminated 
+                                      ? "Eliminated" 
+                                      : contestant.region}
                                 </div>
                               </div>
                             </div>
@@ -1535,21 +1605,25 @@ export function TournamentBracket({ tournamentId, leagueSquads }: TournamentBrac
               </div>
             </div>
 
-            {/* Survivor Legend */}
+            {/* Changed: Updated Survivor Legend to show green/red elimination status per user request */}
             <div className="mt-4 p-3 bg-muted/30 rounded-lg">
               <h4 className="font-medium mb-2">Legend</h4>
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-3 text-sm">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
                 <div className="flex items-center space-x-2">
-                  <div className="w-4 h-4 bg-amber-500/20 rounded-full border border-amber-500/40"></div>
-                  <span>Old School (S1-S39)</span>
+                  <div className="w-4 h-4 bg-green-500/20 rounded border border-green-500/40"></div>
+                  <span>Still in Game</span>
                 </div>
                 <div className="flex items-center space-x-2">
-                  <div className="w-4 h-4 bg-sky-500/20 rounded-full border border-sky-500/40"></div>
-                  <span>New School (S40-S49)</span>
+                  <div className="w-4 h-4 bg-red-500/20 rounded border border-red-500/50"></div>
+                  <span>Voted Out This Episode</span>
                 </div>
                 <div className="flex items-center space-x-2">
-                  <div className="w-4 h-4 bg-primary/10 rounded border border-primary/30"></div>
-                  <span>Currently in Game</span>
+                  <div className="w-4 h-4 bg-red-500/10 rounded border border-red-500/30 opacity-60"></div>
+                  <span>Previously Eliminated</span>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <div className="w-4 h-4 bg-muted rounded border border-dashed border-muted-foreground/40"></div>
+                  <span>Not Yet Aired</span>
                 </div>
               </div>
             </div>
