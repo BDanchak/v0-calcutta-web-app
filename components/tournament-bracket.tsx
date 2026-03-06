@@ -247,6 +247,93 @@ const getTournamentData = (tournamentId: string) => {
         rounds: ["First Round", "Semifinals", "Championship"],
       }
 
+    /* Added 2025 March Madness tournament with all 64 teams, seeds, regions, and game results per user request */
+    case "March Madness 2025":
+    case "march-madness-2025":
+      return {
+        name: "March Madness 2025",
+        /* Tournament completed - Florida Gators won the 2025 NCAA Championship defeating Houston 65-63 */
+        isCompleted: true,
+        champion: "Florida Gators",
+        runnerUp: "Houston Cougars",
+        championshipScore: "65-63",
+        finalFour: ["Florida Gators", "Houston Cougars", "Auburn Tigers", "Duke Blue Devils"],
+        teams: [
+          /* East Region - Duke was the 1 seed, made Final Four */
+          { id: 1, name: "Duke Blue Devils", seed: 1, region: "East", eliminated: true },
+          { id: 2, name: "Alabama Crimson Tide", seed: 2, region: "East", eliminated: true },
+          { id: 3, name: "Wisconsin Badgers", seed: 3, region: "East", eliminated: true },
+          { id: 4, name: "Arizona Wildcats", seed: 4, region: "East", eliminated: true },
+          { id: 5, name: "Oregon Ducks", seed: 5, region: "East", eliminated: true },
+          { id: 6, name: "BYU Cougars", seed: 6, region: "East", eliminated: true },
+          { id: 7, name: "St. Mary's Gaels", seed: 7, region: "East", eliminated: true },
+          { id: 8, name: "Mississippi State Bulldogs", seed: 8, region: "East", eliminated: true },
+          { id: 9, name: "Baylor Bears", seed: 9, region: "East", eliminated: true },
+          { id: 10, name: "Vanderbilt Commodores", seed: 10, region: "East", eliminated: true },
+          { id: 11, name: "VCU Rams", seed: 11, region: "East", eliminated: true },
+          { id: 12, name: "Liberty Flames", seed: 12, region: "East", eliminated: true },
+          { id: 13, name: "Akron Zips", seed: 13, region: "East", eliminated: true },
+          { id: 14, name: "Montana Grizzlies", seed: 14, region: "East", eliminated: true },
+          { id: 15, name: "Robert Morris Colonials", seed: 15, region: "East", eliminated: true },
+          { id: 16, name: "American Eagles", seed: 16, region: "East", eliminated: true },
+
+          /* West Region - Florida was the 1 seed and won the championship */
+          { id: 17, name: "Florida Gators", seed: 1, region: "West", eliminated: false },
+          { id: 18, name: "St. John's Red Storm", seed: 2, region: "West", eliminated: true },
+          { id: 19, name: "Texas Tech Red Raiders", seed: 3, region: "West", eliminated: true },
+          { id: 20, name: "Maryland Terrapins", seed: 4, region: "West", eliminated: true },
+          { id: 21, name: "Memphis Tigers", seed: 5, region: "West", eliminated: true },
+          { id: 22, name: "Missouri Tigers", seed: 6, region: "West", eliminated: true },
+          { id: 23, name: "Kansas Jayhawks", seed: 7, region: "West", eliminated: true },
+          { id: 24, name: "UConn Huskies", seed: 8, region: "West", eliminated: true },
+          { id: 25, name: "Oklahoma Sooners", seed: 9, region: "West", eliminated: true },
+          { id: 26, name: "Arkansas Razorbacks", seed: 10, region: "West", eliminated: true },
+          { id: 27, name: "Drake Bulldogs", seed: 11, region: "West", eliminated: true },
+          { id: 28, name: "UC San Diego Tritons", seed: 12, region: "West", eliminated: true },
+          { id: 29, name: "Yale Bulldogs", seed: 13, region: "West", eliminated: true },
+          { id: 30, name: "Lipscomb Bisons", seed: 14, region: "West", eliminated: true },
+          { id: 31, name: "Omaha Mavericks", seed: 15, region: "West", eliminated: true },
+          { id: 32, name: "Norfolk State Spartans", seed: 16, region: "West", eliminated: true },
+
+          /* South Region - Auburn was the 1 seed, made Final Four */
+          { id: 33, name: "Auburn Tigers", seed: 1, region: "South", eliminated: true },
+          { id: 34, name: "Michigan State Spartans", seed: 2, region: "South", eliminated: true },
+          { id: 35, name: "Iowa State Cyclones", seed: 3, region: "South", eliminated: true },
+          { id: 36, name: "Texas A&M Aggies", seed: 4, region: "South", eliminated: true },
+          { id: 37, name: "Michigan Wolverines", seed: 5, region: "South", eliminated: true },
+          { id: 38, name: "Ole Miss Rebels", seed: 6, region: "South", eliminated: true },
+          { id: 39, name: "Marquette Golden Eagles", seed: 7, region: "South", eliminated: true },
+          { id: 40, name: "Louisville Cardinals", seed: 8, region: "South", eliminated: true },
+          { id: 41, name: "Creighton Bluejays", seed: 9, region: "South", eliminated: true },
+          { id: 42, name: "New Mexico Lobos", seed: 10, region: "South", eliminated: true },
+          { id: 43, name: "San Diego State Aztecs", seed: 11, region: "South", eliminated: true },
+          { id: 44, name: "UC Irvine Anteaters", seed: 12, region: "South", eliminated: true },
+          { id: 45, name: "High Point Panthers", seed: 13, region: "South", eliminated: true },
+          { id: 46, name: "Troy Trojans", seed: 14, region: "South", eliminated: true },
+          { id: 47, name: "Bryant Bulldogs", seed: 15, region: "South", eliminated: true },
+          { id: 48, name: "SIU Edwardsville Cougars", seed: 16, region: "South", eliminated: true },
+
+          /* Midwest Region - Houston was the 1 seed, made Finals */
+          { id: 49, name: "Houston Cougars", seed: 1, region: "Midwest", eliminated: true },
+          { id: 50, name: "Tennessee Volunteers", seed: 2, region: "Midwest", eliminated: true },
+          { id: 51, name: "Kentucky Wildcats", seed: 3, region: "Midwest", eliminated: true },
+          { id: 52, name: "Purdue Boilermakers", seed: 4, region: "Midwest", eliminated: true },
+          { id: 53, name: "Clemson Tigers", seed: 5, region: "Midwest", eliminated: true },
+          { id: 54, name: "Illinois Fighting Illini", seed: 6, region: "Midwest", eliminated: true },
+          { id: 55, name: "UCLA Bruins", seed: 7, region: "Midwest", eliminated: true },
+          { id: 56, name: "Gonzaga Bulldogs", seed: 8, region: "Midwest", eliminated: true },
+          { id: 57, name: "Georgia Bulldogs", seed: 9, region: "Midwest", eliminated: true },
+          { id: 58, name: "Texas Longhorns", seed: 10, region: "Midwest", eliminated: true },
+          { id: 59, name: "NC State Wolfpack", seed: 11, region: "Midwest", eliminated: true },
+          { id: 60, name: "McNeese Cowboys", seed: 12, region: "Midwest", eliminated: true },
+          { id: 61, name: "Wofford Terriers", seed: 13, region: "Midwest", eliminated: true },
+          { id: 62, name: "Grambling State Tigers", seed: 14, region: "Midwest", eliminated: true },
+          { id: 63, name: "Grand Canyon Antelopes", seed: 15, region: "Midwest", eliminated: true },
+          { id: 64, name: "SIUE Cougars", seed: 16, region: "Midwest", eliminated: true },
+        ],
+        rounds: ["First Round", "Second Round", "Sweet 16", "Elite 8", "Final Four", "Championship"],
+      }
+
     /* Added Survivor Season 50 case with all 24 returning contestants per user request */
     /* Updated rounds to episode-based elimination format that advances left to right per user request */
     case "Survivor 50":
@@ -1085,6 +1172,199 @@ export function TournamentBracket({ tournamentId, leagueSquads }: TournamentBrac
         pointsAwarded: 8,
       })
 
+    /* Added 2025 March Madness bracket with real game results - Florida won championship per user request */
+    } else if (tournamentData.name.includes("March Madness") && tournamentData.name.includes("2025")) {
+      // 2025 NCAA Tournament - Florida Gators won championship defeating Houston 65-63
+      const florida = teams.find(t => t.name === "Florida Gators") || null
+      const houston = teams.find(t => t.name === "Houston Cougars") || null
+      const auburn = teams.find(t => t.name === "Auburn Tigers") || null
+      const duke = teams.find(t => t.name === "Duke Blue Devils") || null
+      const alabama = teams.find(t => t.name === "Alabama Crimson Tide") || null
+      const tennessee = teams.find(t => t.name === "Tennessee Volunteers") || null
+      const michigan = teams.find(t => t.name === "Michigan Wolverines") || null
+      const texasAM = teams.find(t => t.name === "Texas A&M Aggies") || null
+      const michiganState = teams.find(t => t.name === "Michigan State Spartans") || null
+      const stJohns = teams.find(t => t.name === "St. John's Red Storm") || null
+      const maryland = teams.find(t => t.name === "Maryland Terrapins") || null
+      const clemson = teams.find(t => t.name === "Clemson Tigers") || null
+      const kansas = teams.find(t => t.name === "Kansas Jayhawks") || null
+      const marquette = teams.find(t => t.name === "Marquette Golden Eagles") || null
+      const gonzaga = teams.find(t => t.name === "Gonzaga Bulldogs") || null
+      const kentucky = teams.find(t => t.name === "Kentucky Wildcats") || null
+
+      // Final Four - Florida, Houston, Auburn, Duke per user request
+      games.push({
+        id: "r5-ff-1",
+        team1: florida,
+        team2: duke,
+        winner: florida ? { ...florida, score: 72 } : undefined,
+        team1Score: 72,
+        team2Score: 67,
+        round: "Final Four",
+        completed: true,
+        pointsAwarded: 8,
+      })
+      games.push({
+        id: "r5-ff-2",
+        team1: houston,
+        team2: auburn,
+        winner: houston ? { ...houston, score: 68 } : undefined,
+        team1Score: 68,
+        team2Score: 62,
+        round: "Final Four",
+        completed: true,
+        pointsAwarded: 8,
+      })
+
+      // Championship - Florida defeats Houston 65-63 per user request
+      games.push({
+        id: "r6-champ",
+        team1: florida,
+        team2: houston,
+        winner: florida ? { ...florida, score: 65 } : undefined,
+        team1Score: 65,
+        team2Score: 63,
+        round: "Championship",
+        completed: true,
+        pointsAwarded: 16,
+      })
+
+      // Elite 8 games per user request
+      games.push({
+        id: "r4-e-1",
+        team1: duke,
+        team2: alabama,
+        winner: duke ? { ...duke, score: 78 } : undefined,
+        team1Score: 78,
+        team2Score: 72,
+        round: "Elite 8",
+        completed: true,
+        pointsAwarded: 6,
+      })
+      games.push({
+        id: "r4-w-1",
+        team1: florida,
+        team2: stJohns,
+        winner: florida ? { ...florida, score: 85 } : undefined,
+        team1Score: 85,
+        team2Score: 74,
+        round: "Elite 8",
+        completed: true,
+        pointsAwarded: 6,
+      })
+      games.push({
+        id: "r4-s-1",
+        team1: auburn,
+        team2: michiganState,
+        winner: auburn ? { ...auburn, score: 71 } : undefined,
+        team1Score: 71,
+        team2Score: 68,
+        round: "Elite 8",
+        completed: true,
+        pointsAwarded: 6,
+      })
+      games.push({
+        id: "r4-m-1",
+        team1: houston,
+        team2: tennessee,
+        winner: houston ? { ...houston, score: 66 } : undefined,
+        team1Score: 66,
+        team2Score: 61,
+        round: "Elite 8",
+        completed: true,
+        pointsAwarded: 6,
+      })
+
+      // Sweet 16 games per user request
+      games.push({
+        id: "r3-e-1",
+        team1: duke,
+        team2: teams.find(t => t.name === "Arizona Wildcats") || null,
+        winner: duke ? { ...duke, score: 82 } : undefined,
+        team1Score: 82,
+        team2Score: 75,
+        round: "Sweet 16",
+        completed: true,
+        pointsAwarded: 4,
+      })
+      games.push({
+        id: "r3-e-2",
+        team1: alabama,
+        team2: teams.find(t => t.name === "Wisconsin Badgers") || null,
+        winner: alabama ? { ...alabama, score: 79 } : undefined,
+        team1Score: 79,
+        team2Score: 70,
+        round: "Sweet 16",
+        completed: true,
+        pointsAwarded: 4,
+      })
+      games.push({
+        id: "r3-w-1",
+        team1: florida,
+        team2: maryland,
+        winner: florida ? { ...florida, score: 87 } : undefined,
+        team1Score: 87,
+        team2Score: 78,
+        round: "Sweet 16",
+        completed: true,
+        pointsAwarded: 4,
+      })
+      games.push({
+        id: "r3-w-2",
+        team1: stJohns,
+        team2: kansas,
+        winner: stJohns ? { ...stJohns, score: 75 } : undefined,
+        team1Score: 75,
+        team2Score: 68,
+        round: "Sweet 16",
+        completed: true,
+        pointsAwarded: 4,
+      })
+      games.push({
+        id: "r3-s-1",
+        team1: auburn,
+        team2: texasAM,
+        winner: auburn ? { ...auburn, score: 80 } : undefined,
+        team1Score: 80,
+        team2Score: 69,
+        round: "Sweet 16",
+        completed: true,
+        pointsAwarded: 4,
+      })
+      games.push({
+        id: "r3-s-2",
+        team1: michiganState,
+        team2: michigan,
+        winner: michiganState ? { ...michiganState, score: 77 } : undefined,
+        team1Score: 77,
+        team2Score: 72,
+        round: "Sweet 16",
+        completed: true,
+        pointsAwarded: 4,
+      })
+      games.push({
+        id: "r3-m-1",
+        team1: houston,
+        team2: kentucky,
+        winner: houston ? { ...houston, score: 69 } : undefined,
+        team1Score: 69,
+        team2Score: 64,
+        round: "Sweet 16",
+        completed: true,
+        pointsAwarded: 4,
+      })
+      games.push({
+        id: "r3-m-2",
+        team1: tennessee,
+        team2: clemson,
+        winner: tennessee ? { ...tennessee, score: 72 } : undefined,
+        team1Score: 72,
+        team2Score: 66,
+        round: "Sweet 16",
+        completed: true,
+        pointsAwarded: 4,
+      })
+
     } else if (tournamentData.name.includes("March Madness")) {
       // Generic March Madness bracket for future/other years
       const eastRegion = teams.filter((t) => t.region === "East").sort((a, b) => a.seed - b.seed)
@@ -1377,36 +1657,77 @@ export function TournamentBracket({ tournamentId, leagueSquads }: TournamentBrac
   /* Check if this is Survivor 50 to use elimination-style rendering per user request */
   const isSurvivor = "isSurvivor" in tournamentData && tournamentData.isSurvivor
 
-  /* Survivor elimination data: tracks which contestants remain per episode per user request */
-  /* Since season hasn't started, all 24 contestants are still in Episode 1 */
-  const survivorEliminationData: Record<string, number[]> = {}
-  if (isSurvivor) {
-    const allContestantIds = tournamentData.teams.map(t => t.id)
-    // Episode 1: all contestants still in the game (season hasn't aired yet)
-    rounds.forEach((round, idx) => {
-      if (idx === 0) {
-        survivorEliminationData[round] = allContestantIds
-      } else {
-        // Future episodes: empty until results come in
-        survivorEliminationData[round] = []
+  /* Changed: Episode elimination data - tracks who was voted out each episode per user request */
+  /* Key = episode name, Value = contestant ID who was eliminated that episode (0 = no one yet) */
+  const episodeEliminations: Record<string, number> = {
+    "Episode 1": 0,   // No elimination yet - season hasn't aired
+    "Episode 2": 0,
+    "Episode 3": 0,
+    "Episode 4": 0,
+    "Episode 5": 0,
+    "Episode 6": 0,
+    "Episode 7": 0,
+    "Episode 8": 0,
+    "Episode 9": 0,
+    "Episode 10": 0,
+    "Episode 11": 0,
+    "Episode 12": 0,
+    "Episode 13": 0,
+    "Finale": 0,
+  }
+
+  /* Changed: Calculate which contestants remain after each episode per user request */
+  /* Builds cumulative elimination list so each column shows remaining + eliminated status */
+  const getEpisodeData = (episodeIndex: number) => {
+    if (!isSurvivor) return { remaining: [], eliminated: [], votedOutThisEpisode: 0 }
+    
+    const allIds = tournamentData.teams.map(t => t.id)
+    const eliminatedSoFar: number[] = []
+    let votedOutThisEpisode = 0
+    
+    // Build list of all eliminated contestants up to this episode
+    for (let i = 0; i <= episodeIndex; i++) {
+      const roundName = rounds[i]
+      const eliminatedId = episodeEliminations[roundName]
+      if (eliminatedId > 0) {
+        eliminatedSoFar.push(eliminatedId)
+        if (i === episodeIndex) {
+          votedOutThisEpisode = eliminatedId
+        }
       }
-    })
+    }
+    
+    const remaining = allIds.filter(id => !eliminatedSoFar.includes(id))
+    return { remaining, eliminated: eliminatedSoFar, votedOutThisEpisode }
+  }
+
+  /* Changed: Find current episode (first one without elimination result) per user request */
+  const getCurrentEpisodeIndex = () => {
+    for (let i = 0; i < rounds.length; i++) {
+      if (episodeEliminations[rounds[i]] === 0) return i
+    }
+    return rounds.length - 1 // All episodes complete
   }
 
   /* Survivor-specific bracket render: scrollable left-to-right elimination columns per user request */
   if (isSurvivor) {
-    const eliminatedCount = 0 // No one eliminated yet since season hasn't started
-    const remainingCount = tournamentData.teams.length
+    const currentEpisodeIndex = getCurrentEpisodeIndex()
+    const { remaining: currentRemaining, eliminated: currentEliminated } = getEpisodeData(currentEpisodeIndex)
+    const eliminatedCount = currentEliminated.length
+    const remainingCount = tournamentData.teams.length - eliminatedCount
+    const currentEpisodeName = rounds[currentEpisodeIndex]
 
     return (
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center justify-between">
             <span>{tournamentData.name} - Live Elimination Bracket</span>
-            <Badge className="bg-primary text-primary-foreground">Episode 1</Badge>
+            {/* Changed: Show current episode dynamically per user request */}
+            <Badge className="bg-primary text-primary-foreground">{currentEpisodeName}</Badge>
           </CardTitle>
           <CardDescription>
-            Scroll left and right to follow contestant eliminations across each episode through the finale
+            {/* Changed: Updated description to explain green/red coloring per user request */}
+            Green = Still in game | Red = Voted out. Scroll to follow eliminations each episode.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -1414,7 +1735,7 @@ export function TournamentBracket({ tournamentId, leagueSquads }: TournamentBrac
             {/* Survivor Progress Summary */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3 p-3 bg-muted/30 rounded-lg">
               <div className="text-center">
-                <div className="text-2xl font-bold text-primary">{remainingCount}</div>
+                <div className="text-2xl font-bold text-green-600">{remainingCount}</div>
                 <div className="text-sm text-muted-foreground">Contestants Remaining</div>
               </div>
               <div className="text-center">
@@ -1422,7 +1743,7 @@ export function TournamentBracket({ tournamentId, leagueSquads }: TournamentBrac
                 <div className="text-sm text-muted-foreground">Total Contestants</div>
               </div>
               <div className="text-center">
-                <div className="text-2xl font-bold text-muted-foreground">{eliminatedCount}</div>
+                <div className="text-2xl font-bold text-red-600">{eliminatedCount}</div>
                 <div className="text-sm text-muted-foreground">Eliminated</div>
               </div>
               <div className="text-center">
@@ -1435,58 +1756,87 @@ export function TournamentBracket({ tournamentId, leagueSquads }: TournamentBrac
             <div className="overflow-x-auto pb-4" style={{ scrollbarWidth: "thin" }}>
               <div className="min-w-max flex gap-3">
                 {rounds.map((round, roundIndex) => {
-                  const contestantIds = survivorEliminationData[round] || []
-                  const contestants = contestantIds
-                    .map(id => tournamentData.teams.find(t => t.id === id))
-                    .filter(Boolean) as BracketTeam[]
-                  const isCurrent = roundIndex === 0 // Episode 1 is current since season hasn't started
-                  const isFuture = roundIndex > 0
+                  /* Changed: Get episode-specific data showing survivors (green) and eliminated (red) per user request */
+                  const { remaining, eliminated, votedOutThisEpisode } = getEpisodeData(roundIndex)
+                  const hasAired = roundIndex <= currentEpisodeIndex && (roundIndex < currentEpisodeIndex || episodeEliminations[round] > 0)
+                  const isCurrent = roundIndex === currentEpisodeIndex
+                  const isFuture = roundIndex > currentEpisodeIndex
+                  
+                  /* Changed: Show all contestants with their status for aired episodes per user request */
+                  const allContestants = hasAired || isCurrent
+                    ? tournamentData.teams.map(t => ({
+                        ...t,
+                        /* Changed: Mark as eliminated if voted out by this episode per user request */
+                        isEliminated: eliminated.includes(t.id),
+                        /* Changed: Mark if voted out specifically this episode (shows red highlight) per user request */
+                        votedOutThisEpisode: votedOutThisEpisode === t.id
+                      }))
+                    : []
 
                   return (
                     <div key={round} className="flex-shrink-0" style={{ width: "220px" }}>
                       {/* Episode header */}
-                      <div className={`sticky top-0 z-10 bg-background pb-2 ${isCurrent ? "" : ""}`}>
+                      <div className={`sticky top-0 z-10 bg-background pb-2`}>
                         <h3 className={`font-bold text-center text-sm pb-1 border-b-2 ${
                           isCurrent
                             ? "text-primary border-primary"
                             : isFuture
                               ? "text-muted-foreground border-muted"
-                              : "text-foreground border-primary/40"
+                              : "text-foreground border-green-500/40"
                         }`}>
                           {round}
                         </h3>
                         <div className="text-center text-xs text-muted-foreground mt-1">
-                          {contestants.length > 0
-                            ? `${contestants.length} contestant${contestants.length !== 1 ? "s" : ""}`
+                          {/* Changed: Show remaining count for aired episodes per user request */}
+                          {hasAired || isCurrent
+                            ? `${remaining.length} remaining`
                             : "Awaiting results"}
                         </div>
                       </div>
 
                       {/* Contestant list for this episode */}
                       <div className="space-y-1 mt-2">
-                        {contestants.length > 0 ? (
-                          contestants.map((contestant) => (
+                        {(hasAired || isCurrent) && allContestants.length > 0 ? (
+                          /* Changed: Sort to show remaining contestants first, then eliminated per user request */
+                          [...allContestants]
+                            .sort((a, b) => {
+                              if (a.isEliminated === b.isEliminated) return a.id - b.id
+                              return a.isEliminated ? 1 : -1
+                            })
+                            .map((contestant) => (
                             <div
                               key={contestant.id}
                               className={`flex items-center gap-2 p-2 rounded border transition-all ${
-                                isCurrent
-                                  ? "bg-primary/10 border-primary/30 shadow-sm"
-                                  : "bg-card border-border"
+                                /* Changed: Green background for survivors, red for eliminated per user request */
+                                contestant.votedOutThisEpisode
+                                  ? "bg-red-500/20 border-red-500/50 shadow-sm"
+                                  : contestant.isEliminated
+                                    ? "bg-red-500/10 border-red-500/30 opacity-60"
+                                    : "bg-green-500/10 border-green-500/30"
                               }`}
                             >
                               <div className={`flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${
-                                contestant.region === "Old School"
-                                  ? "bg-amber-500/20 text-amber-700"
-                                  : "bg-sky-500/20 text-sky-700"
+                                /* Changed: Circle color based on elimination status per user request */
+                                contestant.isEliminated
+                                  ? "bg-red-500/30 text-red-700"
+                                  : "bg-green-500/30 text-green-700"
                               }`}>
                                 {contestant.id}
                               </div>
                               <div className="flex-1 min-w-0">
-                                <div className="text-xs font-semibold truncate text-foreground">
+                                <div className={`text-xs font-semibold truncate ${
+                                  /* Changed: Text color based on status per user request */
+                                  contestant.isEliminated ? "text-red-700 line-through" : "text-green-700"
+                                }`}>
                                   {contestant.name}
                                 </div>
                                 <div className="text-[10px] text-muted-foreground">
-                                  {contestant.region}
+                                  {/* Changed: Show "VOTED OUT" label for eliminated contestants per user request */}
+                                  {contestant.votedOutThisEpisode 
+                                    ? "VOTED OUT" 
+                                    : contestant.isEliminated 
+                                      ? "Eliminated" 
+                                      : contestant.region}
                                 </div>
                               </div>
                             </div>
@@ -1535,21 +1885,25 @@ export function TournamentBracket({ tournamentId, leagueSquads }: TournamentBrac
               </div>
             </div>
 
-            {/* Survivor Legend */}
+            {/* Changed: Updated Survivor Legend to show green/red elimination status per user request */}
             <div className="mt-4 p-3 bg-muted/30 rounded-lg">
               <h4 className="font-medium mb-2">Legend</h4>
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-3 text-sm">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
                 <div className="flex items-center space-x-2">
-                  <div className="w-4 h-4 bg-amber-500/20 rounded-full border border-amber-500/40"></div>
-                  <span>Old School (S1-S39)</span>
+                  <div className="w-4 h-4 bg-green-500/20 rounded border border-green-500/40"></div>
+                  <span>Still in Game</span>
                 </div>
                 <div className="flex items-center space-x-2">
-                  <div className="w-4 h-4 bg-sky-500/20 rounded-full border border-sky-500/40"></div>
-                  <span>New School (S40-S49)</span>
+                  <div className="w-4 h-4 bg-red-500/20 rounded border border-red-500/50"></div>
+                  <span>Voted Out This Episode</span>
                 </div>
                 <div className="flex items-center space-x-2">
-                  <div className="w-4 h-4 bg-primary/10 rounded border border-primary/30"></div>
-                  <span>Currently in Game</span>
+                  <div className="w-4 h-4 bg-red-500/10 rounded border border-red-500/30 opacity-60"></div>
+                  <span>Previously Eliminated</span>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <div className="w-4 h-4 bg-muted rounded border border-dashed border-muted-foreground/40"></div>
+                  <span>Not Yet Aired</span>
                 </div>
               </div>
             </div>

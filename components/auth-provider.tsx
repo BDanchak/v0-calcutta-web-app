@@ -39,31 +39,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         const { data: { session } } = await supabase.auth.getSession()
         
         if (session?.user) {
-          /* Changed: Try to fetch profile with timeout to prevent hanging when schema cache not ready */
-          let profile = null
-          try {
-            const profilePromise = supabase
-              .from("profiles")
-              .select("*")
-              .eq("id", session.user.id)
-              .single()
-            /* Changed: Add 3 second timeout to prevent indefinite waiting */
-            const timeoutPromise = new Promise((_, reject) => 
-              setTimeout(() => reject(new Error("timeout")), 3000)
-            )
-            const result = await Promise.race([profilePromise, timeoutPromise]) as { data: typeof profile }
-            profile = result?.data
-          } catch {
-            /* Profile fetch failed or timed out - use session data instead */
-          }
-          
-          /* Changed: Set user from Supabase profile data or fall back to session metadata */
+          /* Changed: Skip profile fetch to avoid schema cache errors - use session metadata instead */
           setUser({
             id: session.user.id,
-            name: profile?.name || session.user.user_metadata?.name || session.user.email || "",
+            name: session.user.user_metadata?.name || session.user.email || "",
             email: session.user.email || "",
-            phone: profile?.phone || "",
-            emblem: profile?.emblem || "",
+            phone: "",
+            emblem: "",
           })
         }
       } catch {
@@ -78,23 +60,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     /* Changed: Listen for auth state changes from Supabase */
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (event === "SIGNED_IN" && session?.user) {
-        /* Changed: Try to fetch profile with timeout to prevent hanging */
-        let profile = null
-        try {
-          const profilePromise = supabase
-            .from("profiles")
-            .select("*")
-            .eq("id", session.user.id)
-            .single()
-          /* Changed: Add 3 second timeout to prevent indefinite waiting */
-          const timeoutPromise = new Promise((_, reject) => 
-            setTimeout(() => reject(new Error("timeout")), 3000)
-          )
-          const result = await Promise.race([profilePromise, timeoutPromise]) as { data: typeof profile }
-          profile = result?.data
-        } catch {
-          /* Profile fetch failed or timed out - use session data instead */
-        }
+        /* Changed: Skip profile fetch entirely to avoid schema cache errors per user request */
+        /* Profile data will come from session metadata instead */
+        const profile = null
         
         setUser({
           id: session.user.id,
@@ -125,30 +93,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
 
     if (data.user) {
-      /* Changed: Try to fetch profile with timeout to prevent hanging */
-      let profile = null
-      try {
-        const profilePromise = supabase
-          .from("profiles")
-          .select("*")
-          .eq("id", data.user.id)
-          .single()
-        /* Changed: Add 3 second timeout to prevent indefinite waiting */
-        const timeoutPromise = new Promise((_, reject) => 
-          setTimeout(() => reject(new Error("timeout")), 3000)
-        )
-        const result = await Promise.race([profilePromise, timeoutPromise]) as { data: typeof profile }
-        profile = result?.data
-      } catch {
-        /* Profile fetch failed or timed out - use session data instead */
-      }
-
+      /* Changed: Skip profile fetch to avoid schema cache errors - use session metadata instead */
       setUser({
         id: data.user.id,
-        name: profile?.name || data.user.user_metadata?.name || data.user.email || "",
+        name: data.user.user_metadata?.name || data.user.email || "",
         email: data.user.email || "",
-        phone: profile?.phone || "",
-        emblem: profile?.emblem || "",
+        phone: "",
+        emblem: "",
       })
     }
   }
@@ -188,22 +139,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const updateProfile = async (profileData: { name: string; email: string; phone: string; emblem?: string }) => {
     if (!user) return
 
-    /* Changed: Update profile in Supabase profiles table instead of localStorage per user request */
-    const { error } = await supabase
-      .from("profiles")
-      .update({
-        name: profileData.name,
-        email: profileData.email,
-        phone: profileData.phone,
-        emblem: profileData.emblem ?? user.emblem ?? "",
-      })
-      .eq("id", user.id)
-
-    if (error) {
-      throw new Error(error.message)
-    }
-
-    /* Changed: Update local user state after successful database update */
+    /* Changed: Skip database update to avoid schema cache errors - update local state only */
+    /* Profile updates will be stored locally until schema cache issue is resolved */
     const updatedUser: User = {
       ...user,
       name: profileData.name,
