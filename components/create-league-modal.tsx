@@ -109,7 +109,8 @@ export function CreateLeagueModal({ children, onLeagueCreated }: CreateLeagueMod
     description: "",
     tournament: getClosestUpcomingTournament(),
     maxMembers: "8",
-    entryFee: "25",
+    /* Changed: Set Entry Fee to $0 as standard default per user request */
+    entryFee: "0",
     auctionDate: "",
     auctionTime: "19:00",
     isPublic: false,
@@ -282,7 +283,8 @@ export function CreateLeagueModal({ children, onLeagueCreated }: CreateLeagueMod
         description: "",
         tournament: getClosestUpcomingTournament(),
         maxMembers: "8",
-        entryFee: "25",
+        /* Changed: Set Entry Fee to $0 as standard default per user request */
+    entryFee: "0",
         auctionDate: "",
         auctionTime: "19:00",
         isPublic: false,
