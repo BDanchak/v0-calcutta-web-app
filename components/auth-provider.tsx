@@ -39,13 +39,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         const { data: { session } } = await supabase.auth.getSession()
         
         if (session?.user) {
-          /* Changed: Skip profile fetch to avoid schema cache errors - use session metadata instead */
+          /* Changed: Re-enabled profile fetch from Supabase profiles table per user request */
+          const { data: profile } = await supabase
+            .from("profiles")
+            .select("*")
+            .eq("id", session.user.id)
+            .single()
+          
           setUser({
             id: session.user.id,
-            name: session.user.user_metadata?.name || session.user.email || "",
+            name: profile?.name || session.user.user_metadata?.name || session.user.email || "",
             email: session.user.email || "",
-            phone: "",
-            emblem: "",
+            phone: profile?.phone || "",
+            emblem: profile?.emblem || "",
           })
         }
       } catch {
@@ -60,9 +66,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     /* Changed: Listen for auth state changes from Supabase */
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (event === "SIGNED_IN" && session?.user) {
-        /* Changed: Skip profile fetch entirely to avoid schema cache errors per user request */
-        /* Profile data will come from session metadata instead */
-        const profile = null
+        /* Changed: Re-enabled profile fetch from Supabase profiles table per user request */
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("*")
+          .eq("id", session.user.id)
+          .single()
         
         setUser({
           id: session.user.id,
@@ -93,13 +102,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
 
     if (data.user) {
-      /* Changed: Skip profile fetch to avoid schema cache errors - use session metadata instead */
+      /* Changed: Re-enabled profile fetch from Supabase profiles table per user request */
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("*")
+        .eq("id", data.user.id)
+        .single()
+      
       setUser({
         id: data.user.id,
-        name: data.user.user_metadata?.name || data.user.email || "",
+        name: profile?.name || data.user.user_metadata?.name || data.user.email || "",
         email: data.user.email || "",
-        phone: "",
-        emblem: "",
+        phone: profile?.phone || "",
+        emblem: profile?.emblem || "",
       })
     }
   }
@@ -139,8 +154,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const updateProfile = async (profileData: { name: string; email: string; phone: string; emblem?: string }) => {
     if (!user) return
 
-    /* Changed: Skip database update to avoid schema cache errors - update local state only */
-    /* Profile updates will be stored locally until schema cache issue is resolved */
+    /* Changed: Re-enabled profile update to Supabase profiles table per user request */
+    const { error } = await supabase
+      .from("profiles")
+      .update({
+        name: profileData.name,
+        email: profileData.email,
+        phone: profileData.phone,
+        emblem: profileData.emblem ?? user.emblem ?? "",
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", user.id)
+
+    if (error) {
+      throw new Error(error.message)
+    }
+
+    /* Changed: Update local user state after successful database update */
     const updatedUser: User = {
       ...user,
       name: profileData.name,
