@@ -3,6 +3,10 @@
 import type React from "react"
 
 import { useState } from "react"
+/* Changed: Import useRouter to redirect after successful login per user request */
+import { useRouter } from "next/navigation"
+/* Changed: Import useAuth to access the login function from auth provider per user request */
+import { useAuth } from "@/components/auth-provider"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -20,20 +24,33 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const { toast } = useToast()
+  /* Changed: Get login function from auth provider and router for redirect per user request */
+  const { login } = useAuth()
+  const router = useRouter()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsLoading(true)
 
-    // Simulate login
-    setTimeout(() => {
+    /* Changed: Call actual Supabase login instead of simulated login per user request */
+    try {
+      await login(formData.email, formData.password)
       toast({
         title: "Welcome back!",
         description: "You have been successfully logged in.",
       })
+      /* Changed: Redirect to dashboard after successful login per user request */
+      router.push("/dashboard")
+    } catch (error) {
+      /* Changed: Show error toast if login fails per user request */
+      toast({
+        title: "Login failed",
+        description: error instanceof Error ? error.message : "Invalid email or password",
+        variant: "destructive",
+      })
+    } finally {
       setIsLoading(false)
-      // Redirect to dashboard
-    }, 1000)
+    }
   }
 
   const handleChange = (field: string, value: string) => {
