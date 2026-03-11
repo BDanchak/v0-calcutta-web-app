@@ -121,7 +121,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signup = async (name: string, email: string, password: string) => {
     /* Changed: Use Supabase Auth signUp to save user credentials to database per user request */
-    console.log("[v0] Auth provider signup called with:", email, name)
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
@@ -136,16 +135,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       },
     })
 
-    console.log("[v0] Supabase signUp response:", { data, error })
-
     if (error) {
-      console.log("[v0] Supabase signUp error:", error.message)
       throw new Error(error.message)
     }
 
     /* Changed: Set user immediately after signup (profile created via database trigger) */
     if (data.user) {
-      console.log("[v0] User created with id:", data.user.id)
       setUser({
         id: data.user.id,
         name: name,
