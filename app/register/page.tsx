@@ -10,8 +10,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Navigation } from "@/components/navigation"
 import { Eye, EyeOff, Check } from "lucide-react"
 import Link from "next/link"
+/* Changed: Import useRouter to redirect after successful signup per user request */
+import { useRouter } from "next/navigation"
 import { useToast } from "@/hooks/use-toast"
-import { sendEmail, generateConfirmationEmail } from "@/lib/email-service"
+/* Changed: Import useAuth to access signup function to create user in Supabase per user request */
+import { useAuth } from "@/components/auth-provider"
 
 export default function RegisterPage() {
   const [formData, setFormData] = useState({
@@ -26,6 +29,9 @@ export default function RegisterPage() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const { toast } = useToast()
+  /* Changed: Get signup function from auth provider and router for redirect per user request */
+  const { signup } = useAuth()
+  const router = useRouter()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -50,34 +56,27 @@ export default function RegisterPage() {
 
     setIsLoading(true)
 
+    /* Changed: Call actual Supabase signup instead of just sending email per user request */
+    /* This creates the user in Supabase Auth and triggers profile creation */
     try {
-      const emailData = generateConfirmationEmail(`${formData.firstName} ${formData.lastName}`, formData.email)
+      await signup(`${formData.firstName} ${formData.lastName}`, formData.email, formData.password)
 
-      const emailSent = await sendEmail(emailData)
-
-      if (emailSent) {
-        toast({
-          title: "Account created!",
-          description: "Welcome to Calcutta Fantasy! Please check your email to verify your account.",
-        })
-      } else {
-        toast({
-          title: "Account created!",
-          description:
-            "Your account has been created, but we couldn't send the confirmation email. You can still use your account.",
-          variant: "destructive",
-        })
-      }
-    } catch (error) {
       toast({
         title: "Account created!",
-        description: "Your account has been created, but there was an issue with the confirmation email.",
+        description: "Welcome to Calcutta Fantasy! Please check your email to verify your account.",
+      })
+      /* Changed: Redirect to dashboard after successful signup per user request */
+      router.push("/dashboard")
+    } catch (error) {
+      /* Changed: Show actual error if signup fails per user request */
+      toast({
+        title: "Registration failed",
+        description: error instanceof Error ? error.message : "Could not create account. Please try again.",
         variant: "destructive",
       })
+    } finally {
+      setIsLoading(false)
     }
-
-    setIsLoading(false)
-    // Redirect to dashboard or login
   }
 
   const handleChange = (field: string, value: string | boolean) => {
