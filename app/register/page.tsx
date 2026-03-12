@@ -58,8 +58,11 @@ export default function RegisterPage() {
 
     /* Changed: Call actual Supabase signup instead of just sending email per user request */
     /* This creates the user in Supabase Auth and triggers profile creation */
+    console.log("[v0] Register form submitted with:", { email: formData.email, name: `${formData.firstName} ${formData.lastName}` })
     try {
+      console.log("[v0] Calling signup function...")
       await signup(`${formData.firstName} ${formData.lastName}`, formData.email, formData.password)
+      console.log("[v0] Signup successful!")
 
       toast({
         title: "Account created!",
@@ -69,6 +72,7 @@ export default function RegisterPage() {
       router.push("/dashboard")
     } catch (error) {
       /* Changed: Show actual error if signup fails per user request */
+      console.log("[v0] Signup error:", error)
       toast({
         title: "Registration failed",
         description: error instanceof Error ? error.message : "Could not create account. Please try again.",
