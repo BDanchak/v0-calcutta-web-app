@@ -121,9 +121,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signup = async (name: string, email: string, password: string) => {
     /* Changed: Use Supabase Auth signUp to save user credentials to database per user request */
-    console.log("[v0] Auth provider signup called with:", { email, name })
-    console.log("[v0] Supabase client:", supabase ? "exists" : "null")
-    
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
@@ -132,23 +129,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         data: {
           name: name,
         },
-        /* Changed: Set email redirect URL for confirmation */
+        /* Changed: Set email redirect URL for confirmation per user request */
         emailRedirectTo: process.env.NEXT_PUBLIC_DEV_SUPABASE_REDIRECT_URL ||
           `${window.location.origin}/dashboard`,
       },
     })
 
-    console.log("[v0] Supabase signUp response - data:", data)
-    console.log("[v0] Supabase signUp response - error:", error)
-
+    /* Changed: Throw error with descriptive message if signup fails per user request */
     if (error) {
-      console.log("[v0] Signup error:", error.message)
       throw new Error(error.message)
     }
 
     /* Changed: Set user immediately after signup (profile created via database trigger) */
     if (data.user) {
-      console.log("[v0] User created successfully with ID:", data.user.id)
       setUser({
         id: data.user.id,
         name: name,
@@ -156,8 +149,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         phone: "",
         emblem: "",
       })
-    } else {
-      console.log("[v0] No user returned from signUp - this may indicate email confirmation is required")
+    } else if (data.session === null && !error) {
+      /* Changed: Handle case where email confirmation is required per user request */
+      /* User created but session is null means email confirmation is pending */
+      throw new Error("Please check your email to confirm your account before signing in.")
     }
   }
 
