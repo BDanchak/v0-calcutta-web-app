@@ -137,6 +137,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     /* Changed: Throw error with descriptive message if signup fails per user request */
     if (error) {
+      /* Changed: Provide user-friendly error messages for common Supabase auth errors per user request */
+      if (error.message.includes("email_address_invalid") || error.message.includes("is invalid")) {
+        throw new Error("This email address is not supported. Please avoid using 'test' in your email username, or use a different email provider.")
+      }
       throw new Error(error.message)
     }
 
