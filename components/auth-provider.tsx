@@ -142,6 +142,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     /* Changed: Set user immediately after signup (profile created via database trigger) */
     if (data.user) {
+      /* Changed: Fallback to create profile directly from app if database trigger doesn't fire per user request */
+      /* This ensures profiles table is populated even if trigger fails */
+      const { error: profileError } = await supabase
+        .from("profiles")
+        .upsert({
+          id: data.user.id,
+          email: email,
+          name: name,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        }, { onConflict: 'id' })
+      
+      /* Changed: Log profile creation error but don't block signup per user request */
+      if (profileError) {
+        console.error("Profile creation error (trigger may have already created it):", profileError.message)
+      }
+
       setUser({
         id: data.user.id,
         name: name,
