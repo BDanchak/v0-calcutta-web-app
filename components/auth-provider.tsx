@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { createContext, useContext, useState, useEffect } from "react"
+import { createContext, useContext, useState, useEffect, useMemo } from "react"
 /* Changed: Import Supabase client per user request to save user accounts to database */
 import { createClient } from "@/lib/supabase/client"
 
@@ -28,10 +28,23 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined)
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [isLoading, setIsLoading] = useState(true)
-  /* Changed: Create Supabase client instance for auth operations */
-  const supabase = createClient()
+  /* Changed: Create Supabase client instance safely with useMemo to prevent recreation per user request */
+  const supabase = useMemo(() => {
+    try {
+      return createClient()
+    } catch {
+      /* Changed: Return null if env vars not available yet per user request */
+      return null
+    }
+  }, [])
 
   useEffect(() => {
+    /* Changed: Skip auth check if Supabase client is not available per user request */
+    if (!supabase) {
+      setIsLoading(false)
+      return
+    }
+
     /* Changed: Check Supabase auth session instead of localStorage per user request */
     const checkAuth = async () => {
       try {
@@ -91,6 +104,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [supabase])
 
   const login = async (email: string, password: string) => {
+    /* Changed: Check if Supabase client is available per user request */
+    if (!supabase) {
+      throw new Error("Authentication service is not available. Please refresh the page.")
+    }
     /* Changed: Use Supabase Auth signInWithPassword instead of localStorage per user request */
     const { data, error } = await supabase.auth.signInWithPassword({
       email,
@@ -120,6 +137,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   const signup = async (name: string, email: string, password: string) => {
+    /* Changed: Check if Supabase client is available per user request */
+    if (!supabase) {
+      throw new Error("Authentication service is not available. Please refresh the page.")
+    }
     /* Changed: Use Supabase Auth signUp to save user credentials to database per user request */
     const { data, error } = await supabase.auth.signUp({
       email,
@@ -142,6 +163,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     /* Changed: Set user immediately after signup (profile created via database trigger) */
     if (data.user) {
+      /* Changed: Fallback to create profile directly from app if database trigger doesn't fire per user request */
+      /* This ensures profiles table is populated even if trigger fails */
+      const { error: profileError } = await supabase
+        .from("profiles")
+        .upsert({
+          id: data.user.id,
+          email: email,
+          name: name,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        }, { onConflict: 'id' })
+      
+      /* Changed: Log profile creation error but don't block signup per user request */
+      if (profileError) {
+        console.error("Profile creation error (trigger may have already created it):", profileError.message)
+      }
+
       setUser({
         id: data.user.id,
         name: name,
@@ -158,6 +196,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const updateProfile = async (profileData: { name: string; email: string; phone: string; emblem?: string }) => {
     if (!user) return
+    /* Changed: Check if Supabase client is available per user request */
+    if (!supabase) {
+      throw new Error("Authentication service is not available. Please refresh the page.")
+    }
 
     /* Changed: Re-enabled profile update to Supabase profiles table per user request */
     const { error } = await supabase
@@ -188,7 +230,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const logout = async () => {
     /* Changed: Use Supabase Auth signOut instead of localStorage per user request */
-    await supabase.auth.signOut()
+    if (supabase) {
+      await supabase.auth.signOut()
+    }
     setUser(null)
   }
 
