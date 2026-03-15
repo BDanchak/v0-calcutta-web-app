@@ -676,21 +676,42 @@ export function CreateLeagueModal({ children, onLeagueCreated }: CreateLeagueMod
                   {formData.enableSquads && (
                     <div className="space-y-2 ml-8">
                       <Label htmlFor="numberOfSquads">Number of Squads</Label>
-                      <Select
-                        value={formData.numberOfSquads}
-                        onValueChange={(value) => handleInputChange("numberOfSquads", value)}
-                      >
-                        <SelectTrigger className="w-full">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {[2, 3, 4, 6, 8].map((num) => (
-                            <SelectItem key={num} value={num.toString()}>
-                              {num} squads
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                      {/* Changed: Added custom input option alongside preset values for Number of Squads per user request */}
+                      <div className="flex gap-2">
+                        <Select
+                          value={[2, 3, 4, 6, 8].includes(Number(formData.numberOfSquads)) ? formData.numberOfSquads : "custom"}
+                          onValueChange={(value) => {
+                            /* Changed: Set numberOfSquads to "custom" when Custom is selected to trigger input display per user request */
+                            handleInputChange("numberOfSquads", value)
+                          }}
+                        >
+                          <SelectTrigger className="flex-1">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {[2, 3, 4, 6, 8].map((num) => (
+                              <SelectItem key={num} value={num.toString()}>
+                                {num} squads
+                              </SelectItem>
+                            ))}
+                            {/* Changed: Added Custom option to allow user-entered values per user request */}
+                            <SelectItem value="custom">Custom</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        {/* Changed: Show input field when numberOfSquads is "custom" or not in preset list per user request */}
+                        {(formData.numberOfSquads === "custom" || ![2, 3, 4, 6, 8, "2", "3", "4", "6", "8"].includes(formData.numberOfSquads)) && (
+                          <Input
+                            id="numberOfSquadsCustom"
+                            type="number"
+                            min="2"
+                            max="100"
+                            placeholder="Enter #"
+                            className="w-24"
+                            value={formData.numberOfSquads === "custom" ? "" : formData.numberOfSquads}
+                            onChange={(e) => handleInputChange("numberOfSquads", e.target.value)}
+                          />
+                        )}
+                      </div>
                       <p className="text-xs text-muted-foreground">
                         Users will be evenly distributed across squads. Each squad will participate in the auction
                         together and share ownership of won teams.
