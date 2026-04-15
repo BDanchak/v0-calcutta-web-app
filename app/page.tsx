@@ -150,8 +150,9 @@ export default function HomePage() {
             </div>
             <h1 className="text-4xl font-bold tracking-tight text-foreground sm:text-6xl">
               The Ultimate{" "}
+              {/* Changed: Updated "March Madness" to "Sports Tournament" per user request, animation preserved */}
               <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent animate-glimmer">
-                March Madness
+                Sports Tournament
               </span>{" "}
               Experience
             </h1>
