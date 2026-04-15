@@ -34,11 +34,9 @@ export default function LeaguesPage() {
     spotsAvailable: false,
   })
 
-  useEffect(() => {
-    if (!isLoading && !user) {
-      setAuthModalOpen(true)
-    }
-  }, [user, isLoading])
+  /* Changed: Removed auto-open auth modal logic per user request */
+  /* Logged-in users should not be prompted to sign in again when accessing My Leagues */
+  /* The page now only shows auth modal when user explicitly clicks Sign In button */
 
   /* Added useEffect to fetch leagues from Supabase on mount per user request to fix data loss on refresh */
   useEffect(() => {
