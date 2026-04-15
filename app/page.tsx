@@ -6,7 +6,8 @@ import { Navigation } from "@/components/navigation"
 import { CreateLeagueModal } from "@/components/create-league-modal"
 import { JoinLeagueModal } from "@/components/join-league-modal"
 import { AnimatedSportsBalls } from "@/components/animated-sports-balls"
-import { Trophy, Users, DollarSign, Zap, Target, Calendar } from "lucide-react"
+/* Changed: Removed DollarSign import since Real Money Prizes feature was removed per user request */
+import { Trophy, Users, Zap, Target, Calendar } from "lucide-react"
 import Link from "next/link"
 import { useState, useEffect } from "react"
 import { leagueStore } from "@/lib/league-store"
@@ -23,12 +24,7 @@ const features = [
     description: "Create custom leagues with your own rules, entry fees, and payout structures.",
   },
   {
-    icon: DollarSign,
-    // Updated title to indicate real money prizes are coming soon
-    title: "Real Money Prizes Coming Soon!!",
-    description: "Win real money based on how well your teams perform in the tournament.",
-  },
-  {
+    /* Changed: Removed "Real Money Prizes Coming Soon!!" feature item per user request */
     icon: Zap,
     title: "Live Bidding",
     description: "Experience the thrill of real-time auctions with live chat and instant updates.",
@@ -150,8 +146,9 @@ export default function HomePage() {
             </div>
             <h1 className="text-4xl font-bold tracking-tight text-foreground sm:text-6xl">
               The Ultimate{" "}
+              {/* Changed: Updated "March Madness" to "Sports Tournament" per user request, animation preserved */}
               <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent animate-glimmer">
-                March Madness
+                Sports Tournament
               </span>{" "}
               Experience
             </h1>

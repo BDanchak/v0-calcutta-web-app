@@ -441,8 +441,8 @@ function leagueToSupabaseRow(league: League) {
     maximum_bid: league.maximumBid,
     squads: league.squads ? JSON.stringify(league.squads) : null,
     auction_participants: league.auctionParticipants ? JSON.stringify(league.auctionParticipants) : null,
-    /* Added user_id field per user request to link leagues with authenticated users */
-    user_id: league.userId || null,
+    /* Changed: Removed user_id field since column may not exist in database per user request */
+    /* The created_by field already stores the authenticated user's ID */
   }
 }
 
@@ -1186,9 +1186,11 @@ export const leagueStore = create<LeagueStore>((set, get) => ({
       if (data && data.length > 0) {
         /* Convert Supabase rows to League format and merge with mock data per user request */
         const supabaseLeagues = data.map(supabaseRowToLeague)
-        /* Changed: Filter leagues to only show user's own leagues (created or joined) per user request */
+        /* Changed: Filter leagues to show user's own leagues (created or joined) per user request */
+        /* Uses both createdBy (existing field) and userId fields to match user's leagues */
         const userLeagues = authUser 
           ? supabaseLeagues.filter(l => 
+              l.createdBy === authUser.id || 
               l.userId === authUser.id || 
               l.joinedMembers.includes(authUser.id) ||
               l.isPublic
@@ -1222,13 +1224,22 @@ export const leagueStore = create<LeagueStore>((set, get) => ({
   ) => {
     const { customInviteCode, ...restLeagueData } = leagueData
 
+    /* Changed: Get authenticated user's UUID from Supabase Auth per user request to link leagues with user accounts */
+    /* Moved to top of function so authenticatedUserId can be used throughout per user request */
+    const supabase = createClient()
+    const { data: { user: authUser } } = await supabase.auth.getUser()
+
+    /* Changed: Use authenticated user ID for createdBy to ensure league shows in My Leagues per user request */
+    const authenticatedUserId = authUser?.id || restLeagueData.createdBy
+
     const squads: Squad[] = []
     if (restLeagueData.enableSquads && restLeagueData.numberOfSquads) {
       for (let i = 1; i <= restLeagueData.numberOfSquads; i++) {
         squads.push({
           id: `squad-${i}`,
           name: `Squad ${i}`,
-          members: i === 1 ? [restLeagueData.createdBy] : [], // Assign creator to first squad
+          /* Changed: Use authenticatedUserId instead of restLeagueData.createdBy per user request */
+          members: i === 1 ? [authenticatedUserId] : [], // Assign creator to first squad
           totalSpent: 0,
           totalTeams: 0,
           totalWinnings: 0,
@@ -1243,20 +1254,15 @@ export const leagueStore = create<LeagueStore>((set, get) => ({
     if (restLeagueData.enableSquads || restLeagueData.entryFee) {
       // Assuming entryFee implies auction
       auctionParticipants = {}
-      // For simplicity, adding creator as the first participant with a default budget
-      // In a real app, this would be more dynamic based on entry fee and budget settings
-      auctionParticipants[restLeagueData.createdBy] = {
-        id: restLeagueData.createdBy,
-        name: restLeagueData.createdBy, // This should be the actual user's name
+      /* Changed: Use authenticatedUserId for auction participant per user request */
+      auctionParticipants[authenticatedUserId] = {
+        id: authenticatedUserId,
+        name: authenticatedUserId, // This should be the actual user's name
         totalSpent: 0,
         teamsWon: 0,
         remainingBudget: restLeagueData.spendingLimit || 1000, // Default budget if not set
       }
     }
-
-    /* Changed: Get authenticated user's UUID from Supabase Auth per user request to link leagues with user accounts */
-    const supabase = createClient()
-    const { data: { user: authUser } } = await supabase.auth.getUser()
 
     const newLeague: League = {
       ...restLeagueData,
@@ -1266,7 +1272,9 @@ export const leagueStore = create<LeagueStore>((set, get) => ({
       members: 1, // Creator is the first member
       status: "upcoming",
       nextAction: "Manage League",
-      joinedMembers: [restLeagueData.createdBy],
+      /* Changed: Use authenticated user ID for joinedMembers and createdBy per user request */
+      createdBy: authenticatedUserId,
+      joinedMembers: [authenticatedUserId],
       squads: squads.length > 0 ? squads : undefined,
       auctionParticipants: auctionParticipants,
       /* Changed: Set userId from authenticated Supabase user per user request */
@@ -1290,9 +1298,9 @@ export const leagueStore = create<LeagueStore>((set, get) => ({
       leagues: [...state.leagues, newLeague],
     }))
 
-    // Add recent activity for league creation
+    /* Changed: Add recent activity using authenticatedUserId per user request */
     get().addRecentActivity({
-      userId: restLeagueData.createdBy,
+      userId: authenticatedUserId,
       type: "league_created",
       message: `You created '${newLeague.name}' league`,
     })
