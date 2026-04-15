@@ -59,6 +59,8 @@ export function CreateLeagueModal({ children, onLeagueCreated }: CreateLeagueMod
     "survivor-50": new Date("2026-02-25"),
     // Added March Madness 2025 tournament date per user request
     "march-madness-2025": new Date("2025-03-18"),
+    // Added 2026 World Cup tournament date per user request
+    "world-cup-2026": new Date("2026-06-11"),
   }
 
   const getClosestUpcomingTournament = () => {
@@ -101,6 +103,13 @@ export function CreateLeagueModal({ children, onLeagueCreated }: CreateLeagueMod
       name: "Survivor 50",
       description: "Survivor Season 50 - Returning All-Stars (24 Contestants)",
       date: "February 25, 2026",
+    },
+    // Added 2026 World Cup tournament per user request
+    {
+      id: "world-cup-2026",
+      name: "2026 World Cup",
+      description: "FIFA World Cup 2026 - USA, Canada & Mexico",
+      date: "June 11 - July 19, 2026",
     },
   ]
 
