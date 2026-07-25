@@ -59,6 +59,8 @@ export function CreateLeagueModal({ children, onLeagueCreated }: CreateLeagueMod
     "survivor-50": new Date("2026-02-25"),
     // Added March Madness 2025 tournament date per user request
     "march-madness-2025": new Date("2025-03-18"),
+    // Added 2026-2027 NFL Season tournament date (season kicks off early September 2026) per user request
+    "nfl-season-2026-2027": new Date("2026-09-10"),
   }
 
   const getClosestUpcomingTournament = () => {
@@ -101,6 +103,13 @@ export function CreateLeagueModal({ children, onLeagueCreated }: CreateLeagueMod
       name: "Survivor 50",
       description: "Survivor Season 50 - Returning All-Stars (24 Contestants)",
       date: "February 25, 2026",
+    },
+    // Added 2026-2027 NFL Season tournament option per user request
+    {
+      id: "nfl-season-2026-2027",
+      name: "2026-2027 NFL Season",
+      description: "National Football League 2026-2027 Season (32 Teams)",
+      date: "September 2026 - February 2027",
     },
   ]
 
