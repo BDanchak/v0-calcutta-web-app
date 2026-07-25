@@ -59,6 +59,8 @@ export function CreateLeagueModal({ children, onLeagueCreated }: CreateLeagueMod
     "survivor-50": new Date("2026-02-25"),
     // Added March Madness 2025 tournament date per user request
     "march-madness-2025": new Date("2025-03-18"),
+    // Added 2026-2027 NFL Season tournament date (season kicks off early September 2026) per user request
+    "nfl-season-2026-2027": new Date("2026-09-10"),
   }
 
   const getClosestUpcomingTournament = () => {
@@ -101,6 +103,13 @@ export function CreateLeagueModal({ children, onLeagueCreated }: CreateLeagueMod
       name: "Survivor 50",
       description: "Survivor Season 50 - Returning All-Stars (24 Contestants)",
       date: "February 25, 2026",
+    },
+    // Added 2026-2027 NFL Season tournament option per user request
+    {
+      id: "nfl-season-2026-2027",
+      name: "2026-2027 NFL Season",
+      description: "National Football League 2026-2027 Season (32 Teams)",
+      date: "September 2026 - February 2027",
     },
   ]
 
@@ -676,21 +685,42 @@ export function CreateLeagueModal({ children, onLeagueCreated }: CreateLeagueMod
                   {formData.enableSquads && (
                     <div className="space-y-2 ml-8">
                       <Label htmlFor="numberOfSquads">Number of Squads</Label>
-                      <Select
-                        value={formData.numberOfSquads}
-                        onValueChange={(value) => handleInputChange("numberOfSquads", value)}
-                      >
-                        <SelectTrigger className="w-full">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {[2, 3, 4, 6, 8].map((num) => (
-                            <SelectItem key={num} value={num.toString()}>
-                              {num} squads
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                      {/* Changed: Added custom squads input option alongside preset values per user request */}
+                      <div className="flex gap-2">
+                        <Select
+                          /* Changed: Show "custom" when current value isn't a preset so the input stays visible per user request */
+                          value={[2, 3, 4, 6, 8].includes(Number(formData.numberOfSquads)) ? formData.numberOfSquads : "custom"}
+                          onValueChange={(value) => handleInputChange("numberOfSquads", value)}
+                        >
+                          <SelectTrigger className="flex-1">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {[2, 3, 4, 6, 8].map((num) => (
+                              <SelectItem key={num} value={num.toString()}>
+                                {num} squads
+                              </SelectItem>
+                            ))}
+                            {/* Changed: Added Custom option to allow user-entered squad counts per user request */}
+                            <SelectItem value="custom">Custom</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        {/* Changed: Show number input when "custom" is selected or value isn't a preset per user request */}
+                        {(formData.numberOfSquads === "custom" ||
+                          ![2, 3, 4, 6, 8, "2", "3", "4", "6", "8"].includes(formData.numberOfSquads)) && (
+                          <Input
+                            id="numberOfSquadsCustom"
+                            type="number"
+                            min="2"
+                            max="100"
+                            placeholder="Enter #"
+                            className="w-24"
+                            /* Changed: Clear the field while "custom" is the sentinel value so the user can type a count per user request */
+                            value={formData.numberOfSquads === "custom" ? "" : formData.numberOfSquads}
+                            onChange={(e) => handleInputChange("numberOfSquads", e.target.value)}
+                          />
+                        )}
+                      </div>
                       <p className="text-xs text-muted-foreground">
                         Users will be evenly distributed across squads. Each squad will participate in the auction
                         together and share ownership of won teams.

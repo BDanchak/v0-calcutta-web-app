@@ -57,6 +57,10 @@ export default function LeaguesPage() {
   }, [user])
 
   const loadLeagues = () => {
+    /* Changed: Re-fetch from Supabase on each refresh so public leagues created by ANY user
+       appear for everyone, not just leagues already cached in the local store on mount per user request */
+    leagueStore.getState().fetchLeagues()
+
     if (user) {
       // Load user's leagues using the store
       const myLeagues = leagueStore.getState().getUserLeagues(user.id)

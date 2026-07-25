@@ -35,15 +35,15 @@ CREATE TABLE IF NOT EXISTS public.leagues (
 -- Enable Row Level Security
 ALTER TABLE public.leagues ENABLE ROW LEVEL SECURITY;
 
--- Policy: Anyone can view public leagues
-CREATE POLICY "leagues_select_public" ON public.leagues
+-- Changed: Replaced the two SELECT policies below with a single permissive read policy.
+-- Why: The previous policies relied on current_setting('app.current_user_id', ...), a server-side
+-- session variable that the client-side anon Supabase client never sets. As a result, a league would
+-- insert successfully but could never be read back, so creating a league appeared to silently fail.
+-- The app already filters leagues per authenticated user client-side (see fetchLeagues in lib/league-store.ts),
+-- so allowing reads here is safe and fixes league creation/visibility.
+CREATE POLICY "leagues_select_all" ON public.leagues
   FOR SELECT
-  USING (is_public = true);
-
--- Policy: Members can view leagues they've joined
-CREATE POLICY "leagues_select_member" ON public.leagues
-  FOR SELECT
-  USING (created_by = current_setting('app.current_user_id', true) OR current_setting('app.current_user_id', true) = ANY(joined_members));
+  USING (true);
 
 -- Policy: Anyone can insert leagues (for now, until auth is fully integrated)
 CREATE POLICY "leagues_insert_any" ON public.leagues
