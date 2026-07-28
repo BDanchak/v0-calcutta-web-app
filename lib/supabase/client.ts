@@ -4,13 +4,25 @@ import { createBrowserClient } from '@supabase/ssr'
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || ''
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ''
 
+/* Changed: Cache a single browser client instance so multiple callers don't each create their own
+   client. Multiple clients competed for the same auth lock (navigator.locks), causing
+   "AbortError: Lock broken by another request with the 'steal' option." Fix per runtime error. */
+let browserClient: ReturnType<typeof createBrowserClient> | undefined
+
 export function createClient() {
   /* Changed: Check if env vars are available before creating client per user request */
   if (!supabaseUrl || !supabaseAnonKey) {
     throw new Error('Supabase URL and Anon Key are required. Please check your environment variables.')
   }
-  
-  return createBrowserClient(
+
+  /* Changed: Return the already-created singleton instance if it exists, preventing duplicate
+     auth-lock holders that triggered the "Lock broken" AbortError. */
+  if (browserClient) {
+    return browserClient
+  }
+
+  /* Changed: Create the client once and store it in the module-level singleton for reuse. */
+  browserClient = createBrowserClient(
     supabaseUrl,
     supabaseAnonKey,
     {
@@ -25,4 +37,6 @@ export function createClient() {
       },
     }
   )
+
+  return browserClient
 }
