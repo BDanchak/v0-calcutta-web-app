@@ -29,7 +29,10 @@ CREATE TABLE IF NOT EXISTS public.leagues (
   minimum_bid DECIMAL(10, 2) DEFAULT 0,
   maximum_bid DECIMAL(10, 2),
   squads JSONB DEFAULT '[]',
-  auction_participants JSONB DEFAULT '{}'
+  auction_participants JSONB DEFAULT '{}',
+  -- Added auction_results column so teams acquired by each user during the auction persist and can be
+  -- shown in each user's squad on the leagues tab after the auction completes (keyed by user id) per user request
+  auction_results JSONB DEFAULT '{}'
 );
 
 -- Enable Row Level Security
