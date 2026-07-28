@@ -42,6 +42,8 @@ import {
 } from "@/components/ui/dialog"
 import { useAuth } from "@/components/auth-provider"
 import { UserEmblem } from "@/components/user-emblem"
+/* Changed: Import Supabase browser client to fetch member profile names for squad names per user request */
+import { createClient } from "@/lib/supabase/client"
 
 export default function LeaguePage() {
   const params = useParams()
@@ -49,10 +51,42 @@ export default function LeaguePage() {
   const [league, setLeague] = useState(leagueStore.getState().getLeague(leagueId))
   const { user } = useAuth()
 
+  /* Changed: Store a map of memberId -> profile name so squads can display each member's profile name per user request */
+  const [memberProfiles, setMemberProfiles] = useState<Record<string, string>>({})
+
   /* Added useEffect to fetch leagues from Supabase on mount per user request to fix data loss on refresh */
   useEffect(() => {
     leagueStore.getState().fetchLeagues()
   }, [])
+
+  /* Changed: Fetch profile names from Supabase for all league members so their profile names show as squad names
+     (localStorage is no longer used for auth, so names must come from the profiles table) per user request */
+  useEffect(() => {
+    if (!league) return
+    // Collect every member id in this league (joined members + the creator), de-duplicated
+    const memberIds = [...new Set([...(league.joinedMembers || []), league.createdBy])].filter(Boolean) as string[]
+    if (memberIds.length === 0) return
+    // Create the Supabase client safely; if env vars are missing, skip without crashing
+    let supabase
+    try {
+      supabase = createClient()
+    } catch {
+      return
+    }
+    // Look up the profile name for each member id and store them in the memberProfiles map
+    supabase
+      .from("profiles")
+      .select("id, name")
+      .in("id", memberIds)
+      .then(({ data }) => {
+        if (!data) return
+        const map: Record<string, string> = {}
+        data.forEach((p: any) => {
+          if (p.name) map[p.id] = p.name
+        })
+        setMemberProfiles(map)
+      })
+  }, [league])
 
   useEffect(() => {
     const unsubscribe = leagueStore.subscribe(() => {
@@ -208,16 +242,19 @@ export default function LeaguePage() {
   ]
 
   const getMemberName = (memberId: string) => {
-    // Get current user
-    const currentUser = typeof window !== "undefined" ? JSON.parse(localStorage.getItem("currentUser") || "null") : null
-    if (currentUser && currentUser.id === memberId) {
-      return currentUser.name
+    /* Changed: Resolve the current user's own profile name from the auth context per user request */
+    if (user && user.id === memberId) {
+      return user.name
     }
 
-    // Get other users from localStorage
-    const existingUsers = typeof window !== "undefined" ? JSON.parse(localStorage.getItem("users") || "[]") : []
-    const user = existingUsers.find((u: any) => u.id === memberId)
-    return user ? user.name : `Member ${memberId}`
+    /* Changed: Resolve other joined members' profile names from the profiles fetched from Supabase
+       (replaces the old localStorage lookup, which no longer holds users since auth moved to Supabase) per user request */
+    if (memberProfiles[memberId]) {
+      return memberProfiles[memberId]
+    }
+
+    // Fallback to a generic label if the profile name has not loaded yet
+    return `Member ${memberId}`
   }
 
   // Mock squads data for pre-auction view (no teams acquired yet)
@@ -232,7 +269,8 @@ export default function LeaguePage() {
       const memberName = getMemberName(memberId)
       return {
         id: index + 1,
-        name: `${memberName}'s Squad`,
+        /* Changed: Use the member's profile name as their squad name per user request */
+        name: memberName,
         owner: memberName,
         position: null,
         points: 0,
@@ -265,7 +303,8 @@ export default function LeaguePage() {
 
         return {
           id: memberId,
-          name: `${memberName}'s Squad`,
+          /* Changed: Use the member's profile name as their squad name per user request */
+          name: memberName,
           owner: memberName,
           position: null,
           points: memberTeams.reduce((sum, team) => sum + (team.points || 0), 0),

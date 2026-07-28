@@ -29,7 +29,10 @@ CREATE TABLE IF NOT EXISTS public.leagues (
   minimum_bid DECIMAL(10, 2) DEFAULT 0,
   maximum_bid DECIMAL(10, 2),
   squads JSONB DEFAULT '[]',
-  auction_participants JSONB DEFAULT '{}'
+  auction_participants JSONB DEFAULT '{}',
+  -- Added auction_results column so teams acquired by each user during the auction persist and can be
+  -- shown in each user's squad on the leagues tab after the auction completes (keyed by user id) per user request
+  auction_results JSONB DEFAULT '{}'
 );
 
 -- Enable Row Level Security
@@ -50,14 +53,15 @@ CREATE POLICY "leagues_insert_any" ON public.leagues
   FOR INSERT
   WITH CHECK (true);
 
--- Policy: Creator can update their leagues
-CREATE POLICY "leagues_update_creator" ON public.leagues
+-- Changed: Replaced the two UPDATE policies below with a single permissive update policy.
+-- Why: The previous "leagues_update_creator" policy's USING clause required current_setting('app.current_user_id', ...),
+-- a server-side session variable the client-side app never sets, and "leagues_update_any" had no USING clause at all.
+-- As a result, when a non-creator joined a public league, the client's UPDATE of joined_members matched 0 rows and
+-- silently failed (no error), so the join never persisted and the league vanished from "My Leagues" on refresh/re-login.
+-- A permissive USING (true) lets the join update actually persist. The app performs its own per-user logic client-side.
+CREATE POLICY "leagues_update_all" ON public.leagues
   FOR UPDATE
-  USING (created_by = current_setting('app.current_user_id', true));
-
--- Policy: Anyone can update leagues (for joining) - simplified for now
-CREATE POLICY "leagues_update_any" ON public.leagues
-  FOR UPDATE
+  USING (true)
   WITH CHECK (true);
 
 -- Policy: Creator can delete their leagues

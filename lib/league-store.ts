@@ -55,6 +55,10 @@ export interface League {
       remainingBudget: number
     }
   >
+  /* Added auctionResults field per user request so teams acquired per user during the auction persist
+     and can be shown in each user's squad on the leagues tab after the auction completes.
+     Keyed by member/user id -> array of teams that member won in the auction. */
+  auctionResults?: Record<string, any[]>
   /* Added user_id field per user request to link leagues with authenticated Supabase users */
   userId?: string
 }
@@ -441,6 +445,9 @@ function leagueToSupabaseRow(league: League) {
     maximum_bid: league.maximumBid,
     squads: league.squads ? JSON.stringify(league.squads) : null,
     auction_participants: league.auctionParticipants ? JSON.stringify(league.auctionParticipants) : null,
+    /* Changed: Persist auctionResults to Supabase so teams acquired in the auction survive refresh and
+       are visible to all users in each squad on the leagues tab per user request */
+    auction_results: league.auctionResults ? JSON.stringify(league.auctionResults) : null,
     /* Changed: Removed user_id field since column may not exist in database per user request */
     /* The created_by field already stores the authenticated user's ID */
   }
@@ -479,6 +486,9 @@ function supabaseRowToLeague(row: Record<string, unknown>): League {
     maximumBid: row.maximum_bid ? Number(row.maximum_bid) : undefined,
     squads: row.squads ? (typeof row.squads === 'string' ? JSON.parse(row.squads) : row.squads) : undefined,
     auctionParticipants: row.auction_participants ? (typeof row.auction_participants === 'string' ? JSON.parse(row.auction_participants) : row.auction_participants) : undefined,
+    /* Changed: Read auctionResults back from Supabase so acquired teams display in each squad after refresh
+       and for other users viewing the league per user request */
+    auctionResults: row.auction_results ? (typeof row.auction_results === 'string' ? JSON.parse(row.auction_results) : row.auction_results) : undefined,
     nextAction: "View League",
     /* Added user_id field per user request to link leagues with authenticated users */
     userId: row.user_id as string | undefined,
