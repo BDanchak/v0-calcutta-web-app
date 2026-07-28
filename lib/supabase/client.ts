@@ -34,6 +34,12 @@ export function createClient() {
         autoRefreshToken: true,
         /* Changed: Detect session from URL for OAuth/email confirmation flows per user request */
         detectSessionInUrl: true,
+        /* Changed: Provide a no-op lock that simply runs the callback instead of using the browser's
+           navigator.locks API. GoTrue's default lock acquires the lock with the "steal" option during
+           token refresh, and in the multi-iframe preview environment those locks get stolen from each
+           other, throwing "AbortError: Lock broken by another request with the 'steal' option."
+           Running the callback directly avoids navigator.locks entirely and eliminates that error. */
+        lock: async (_name: string, _acquireTimeout: number, fn: () => Promise<any>) => fn(),
       },
     }
   )
