@@ -3,6 +3,12 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Trophy } from "lucide-react"
+/* Added SWR to poll the new live-bracket API so real tournament scores and advancing teams update
+   automatically in the Live Bracket tab per user request */
+import useSWR from "swr"
+
+/* Simple JSON fetcher for SWR to call our server-side live-bracket API route per user request */
+const liveBracketFetcher = (url: string) => fetch(url).then((r) => r.json())
 
 interface TournamentBracketProps {
   tournamentId: string
@@ -394,6 +400,35 @@ const getTournamentData = (tournamentId: string) => {
 
 export function TournamentBracket({ tournamentId, leagueSquads }: TournamentBracketProps) {
   const tournamentData = getTournamentData(tournamentId)
+
+  /* Changed: Poll the live-bracket API for real tournament results (scores + advancing teams) per user request.
+     tournamentId here is actually the tournament NAME (passed from the league dashboard), which the API uses
+     to select the correct ESPN data source. Refresh every 60s so the bracket stays live during games. */
+  const { data: liveData } = useSWR(
+    `/api/live-bracket?name=${encodeURIComponent(tournamentId)}`,
+    liveBracketFetcher,
+    { refreshInterval: 60000, revalidateOnFocus: true },
+  )
+
+  /* Changed: Normalize live games from the API into the BracketGame shape this component renders.
+     Only used when the API returns supported live data with at least one game. */
+  const liveGames: BracketGame[] =
+    liveData?.supported && Array.isArray(liveData.games)
+      ? liveData.games.map((g: any) => ({
+          id: g.id,
+          team1: g.team1,
+          team2: g.team2,
+          winner: g.winner,
+          round: g.round,
+          completed: g.completed,
+          pointsAwarded: g.pointsAwarded,
+          team1Score: g.team1Score,
+          team2Score: g.team2Score,
+        }))
+      : []
+
+  /* Changed: True when we have real live data to display instead of the static historical bracket per user request */
+  const hasLiveData = liveGames.length > 0
 
   const generateBracketGames = () => {
     const games: BracketGame[] = []
@@ -1525,7 +1560,9 @@ export function TournamentBracket({ tournamentId, leagueSquads }: TournamentBrac
     return games
   }
 
-  const bracketData = generateBracketGames()
+  /* Changed: Use real live games from the API when available; otherwise fall back to the existing
+     static/historical bracket data so nothing breaks for tournaments without a live source per user request */
+  const bracketData = hasLiveData ? liveGames : generateBracketGames()
 
   const getOwnerColor = (owner?: string) => {
     if (!owner) return "bg-gray-100 text-gray-800"
@@ -1643,8 +1680,14 @@ export function TournamentBracket({ tournamentId, leagueSquads }: TournamentBrac
     )
   }
 
-  const rounds = tournamentData.rounds
-  const gamesByRound = rounds.map((round) => ({
+  /* Changed: When live data is present, only show rounds that actually have live games (in the API's
+     round order) so empty future rounds don't clutter the live view; otherwise use the static rounds
+     per user request */
+  const rounds =
+    hasLiveData && Array.isArray(liveData?.rounds)
+      ? liveData.rounds.filter((round: string) => bracketData.some((g) => g.round === round))
+      : tournamentData.rounds
+  const gamesByRound = rounds.map((round: string) => ({
     round,
     games: bracketData.filter((g) => g.round === round),
   }))
@@ -1653,6 +1696,14 @@ export function TournamentBracket({ tournamentId, leagueSquads }: TournamentBrac
   const completedGames = bracketData.filter((g) => g.completed).length
   const remainingGames = totalGames - completedGames
   const currentRound = bracketData.find((g) => !g.completed)?.round || rounds[rounds.length - 1]
+
+  /* Changed: Count distinct teams from the live games when showing live data so the "Total Teams" stat
+     reflects reality; otherwise use the static team list length per user request */
+  const totalTeams = hasLiveData
+    ? new Set(
+        bracketData.flatMap((g) => [g.team1?.name, g.team2?.name].filter(Boolean) as string[]),
+      ).size
+    : tournamentData.teams.length
 
   /* Check if this is Survivor 50 to use elimination-style rendering per user request */
   const isSurvivor = "isSurvivor" in tournamentData && tournamentData.isSurvivor
@@ -1918,10 +1969,22 @@ export function TournamentBracket({ tournamentId, leagueSquads }: TournamentBrac
       <CardHeader>
         <CardTitle className="flex items-center justify-between">
           <span>{tournamentData.name} - Live Tournament Bracket</span>
-          <Badge className="bg-primary text-primary-foreground">{currentRound}</Badge>
+          {/* Changed: Show a LIVE indicator next to the current round when real live data is being displayed per user request */}
+          <div className="flex items-center gap-2">
+            {hasLiveData && (
+              <Badge className="bg-red-500 text-white flex items-center gap-1">
+                <span className="w-2 h-2 rounded-full bg-white animate-pulse" />
+                LIVE
+              </Badge>
+            )}
+            <Badge className="bg-primary text-primary-foreground">{currentRound}</Badge>
+          </div>
         </CardTitle>
         <CardDescription>
-          Complete tournament bracket showing all teams and their progression through each round
+          {/* Changed: Clarify the bracket reflects real tournament results when live data is available per user request */}
+          {hasLiveData
+            ? "Live tournament results updating automatically as games complete and teams advance"
+            : "Complete tournament bracket showing all teams and their progression through each round"}
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -1933,7 +1996,8 @@ export function TournamentBracket({ tournamentId, leagueSquads }: TournamentBrac
               <div className="text-sm text-muted-foreground">Games Completed</div>
             </div>
             <div className="text-center">
-              <div className="text-2xl font-bold text-foreground">{tournamentData.teams.length}</div>
+              {/* Changed: Show live team count when live data is available per user request */}
+              <div className="text-2xl font-bold text-foreground">{totalTeams}</div>
               <div className="text-sm text-muted-foreground">Total Teams</div>
             </div>
             <div className="text-center">
