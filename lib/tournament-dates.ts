@@ -16,6 +16,10 @@ export const tournamentDates: { [key: string]: Date } = {
   "2025 Ryder Cup": new Date("2025-09-26"),
   "2025 Cancun Challenge": new Date("2025-11-25"),
   "NFL Playoffs 2024": new Date("2024-01-13"),
+  // Added Survivor 50 end date so its completed leagues shift to League History once the tournament has ended per user request
+  "Survivor 50": new Date("2026-05-21"),
+  // Added 2026-2027 NFL Season end date (Super Bowl) so its completed leagues shift to League History once the tournament has ended per user request
+  "2026-2027 NFL Season": new Date("2027-02-14"),
 }
 
 export const isTournamentCompleted = (tournamentName: string): boolean => {
