@@ -23,6 +23,8 @@ import {
   SkipForward,
 } from "lucide-react"
 import { leagueStore } from "@/lib/league-store"
+/* Added Supabase browser client so the auction can broadcast/receive live bids across all users in the league per user request */
+import { createClient } from "@/lib/supabase/client"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import confetti from "canvas-confetti"
 import { useToast } from "@/hooks/use-toast"
@@ -141,6 +143,65 @@ export function RealTimeAuction({ leagueId, isCommissioner, userId }: RealTimeAu
   const storageKey = `auction_state_${leagueId}`
   const initializedRef = useRef(false)
   const betweenResumeTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  /* Added: refs mirroring the latest team index and current bid so the realtime bid handler (which is
+     subscribed only once) always compares incoming bids against fresh values instead of stale closures per user request */
+  const currentTeamIndexRef = useRef(currentTeamIndex)
+  const currentBidRef = useRef(currentBid)
+  useEffect(() => {
+    currentTeamIndexRef.current = currentTeamIndex
+  }, [currentTeamIndex])
+  useEffect(() => {
+    currentBidRef.current = currentBid
+  }, [currentBid])
+
+  /* Added: ref to the shared Supabase Realtime channel used to broadcast and receive live bids for this auction per user request */
+  const channelRef = useRef<ReturnType<ReturnType<typeof createClient>["channel"]> | null>(null)
+
+  /* Added: resolve the current user's real display name so OTHER users see who placed the bid (not "You") per user request */
+  const getMyDisplayName = () => {
+    try {
+      const existingUsers = JSON.parse(localStorage.getItem("users") || "[]")
+      const me = existingUsers.find((u: any) => String(u.id) === String(userId))
+      return me?.name || "A league member"
+    } catch {
+      return "A league member"
+    }
+  }
+
+  /* Added: Subscribe to a shared Supabase Realtime channel (one per league auction) so every user in the
+     league sees the exact same live bids at the same time. When another user bids, we update the current
+     bid, highest bidder, and bid history locally, and extend the timer just like a local bid — keeping the
+     auction fully in sync across all participants per user request. */
+  useEffect(() => {
+    if (!leagueId) return
+    const supabase = createClient()
+    // self: false so the sender does not receive its own broadcast (it already applied the bid locally)
+    const channel = supabase.channel(`auction:${leagueId}`, { config: { broadcast: { self: false } } })
+    channel
+      .on("broadcast", { event: "bid" }, ({ payload }: { payload: any }) => {
+        // Ignore bids intended for a different team than the one currently up for auction
+        if (payload.teamIndex !== currentTeamIndexRef.current) return
+        // Only accept bids STRICTLY higher than the current highest bid so no user can undercut it per user request
+        if (typeof payload.amount !== "number" || payload.amount <= currentBidRef.current) return
+        const isMe = String(payload.bidderId) === String(userId)
+        setCurrentBid(payload.amount)
+        setHighestBidder(isMe ? "You" : payload.bidderName)
+        setHighestBidderId(String(payload.bidderId))
+        setBidHistory((prev) => [
+          { bidder: isMe ? "You" : payload.bidderName, amount: payload.amount, timestamp: payload.timestamp },
+          ...prev,
+        ])
+        // Extend the timer on a remote bid, mirroring local bid behavior so the team stays live
+        setTimeRemaining((prev) => Math.max(prev, auctionSettings.secondsAfterBid))
+      })
+      .subscribe()
+    channelRef.current = channel
+    return () => {
+      supabase.removeChannel(channel)
+      channelRef.current = null
+    }
+  }, [leagueId, userId, auctionSettings.secondsAfterBid])
 
   const saveState = () => {
     try {
@@ -271,13 +332,28 @@ export function RealTimeAuction({ leagueId, isCommissioner, userId }: RealTimeAu
       return
     }
     if (bid > currentBid && auctionStatus === "active") {
+      /* Changed: capture the timestamp once so the local bid and the broadcast to other users share it per user request */
+      const timestamp = new Date().toLocaleTimeString()
       setCurrentBid(bid)
       setHighestBidder("You")
       setHighestBidderId(String(userId))
-      setBidHistory([{ bidder: "You", amount: bid, timestamp: new Date().toLocaleTimeString() }, ...bidHistory])
+      setBidHistory([{ bidder: "You", amount: bid, timestamp }, ...bidHistory])
       setBidAmount("")
       // Add extra time when bid is placed using actual league setting
       setTimeRemaining(Math.max(timeRemaining, auctionSettings.secondsAfterBid))
+      /* Added: broadcast this bid to everyone else in the league auction so they instantly see the new
+         highest bid and bidder, and can only bid higher than it per user request */
+      channelRef.current?.send({
+        type: "broadcast",
+        event: "bid",
+        payload: {
+          teamIndex: currentTeamIndex,
+          amount: bid,
+          bidderId: String(userId),
+          bidderName: getMyDisplayName(),
+          timestamp,
+        },
+      })
     }
   }
 

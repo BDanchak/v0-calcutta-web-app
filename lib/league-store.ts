@@ -1255,7 +1255,12 @@ export const leagueStore = create<LeagueStore>((set, get) => ({
   },
 
   getUserLeagues: (userId: string) => {
-    return get().leagues.filter((league) => league.createdBy === userId || league.joinedMembers.includes(userId))
+    /* Changed: Only include leagues where the user is currently a joined member, not also leagues they created.
+       Why: when a user (including the creator) leaves a league, removeUserFromLeague removes them from
+       joinedMembers but createdBy still points to them, so the old "createdBy === userId" clause kept the
+       left league in their My Leagues tab. The creator is always added to joinedMembers on creation, so an
+       active creator still shows up correctly, while a creator who left is now correctly excluded. */
+    return get().leagues.filter((league) => league.joinedMembers.includes(userId))
   },
 
   getLeague: (id: string) => {
