@@ -117,12 +117,15 @@ export default function HomePage() {
   }, [])
 
   useEffect(() => {
-    const updateLeagueCount = () => {
-      const totalLeagues = leagueStore.getState().leagues.length
+    /* Changed: Fetch the GLOBAL total of leagues created by ALL users from Supabase instead of the
+       per-user-filtered store array, so every user sees the same league count per user request */
+    const updateLeagueCount = async () => {
+      const totalLeagues = await leagueStore.getState().getTotalLeagueCount()
       setLeagueCount(totalLeagues)
     }
 
     updateLeagueCount()
+    /* Poll periodically so newly created leagues by any user are reflected in the counter */
     const interval = setInterval(updateLeagueCount, 1000)
     return () => clearInterval(interval)
   }, [])

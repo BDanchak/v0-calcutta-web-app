@@ -109,6 +109,10 @@ interface LeagueStore {
   isLoading: boolean
   /* Added fetchLeagues function to load leagues from Supabase per user request */
   fetchLeagues: () => Promise<void>
+  /* Added getTotalLeagueCount to return the GLOBAL number of leagues created by ALL users per user request.
+     The home page counter previously used the per-user-filtered `leagues` array, so it differed per user;
+     this queries Supabase for the unfiltered total so every user sees the same number. */
+  getTotalLeagueCount: () => Promise<number>
   getUserLeagues: (userId: string) => League[]
   getLeague: (id: string) => League | undefined
   /* Changed createLeague to async to support Supabase persistence per user request */
@@ -1251,6 +1255,23 @@ export const leagueStore = create<LeagueStore>((set, get) => ({
       }
     } catch {
       set({ isLoading: false })
+    }
+  },
+
+  /* Added getTotalLeagueCount: queries the total number of league rows in Supabase without any per-user
+     filtering, so the home page counter shows every user the same total of leagues created by all users per user request */
+  getTotalLeagueCount: async () => {
+    try {
+      const supabase = createClient()
+      /* head: true + count: "exact" returns only the row count (no rows), across ALL users' leagues */
+      const { count, error } = await supabase.from("leagues").select("*", { count: "exact", head: true })
+      if (error || count === null) {
+        /* On failure, fall back to the locally known league count so the UI still shows a number */
+        return get().leagues.length
+      }
+      return count
+    } catch {
+      return get().leagues.length
     }
   },
 
